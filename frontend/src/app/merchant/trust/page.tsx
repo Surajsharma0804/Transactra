@@ -11,52 +11,49 @@ const metrics = [
 
 export default function TrustPage() {
   const score = 0.94;
-
   return (
     <div className="max-w-3xl space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-white">Trust Score</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Computed from transaction evidence, not self-declared</p>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Trust Score</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Computed from transaction evidence</p>
       </div>
-
-      {/* Score */}
-      <div className="border border-zinc-800 rounded-lg bg-zinc-900 p-6 text-center">
-        <div className="relative w-28 h-28 mx-auto mb-4">
-          <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="42" fill="none" stroke="#27272a" strokeWidth="5" />
-            <circle cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" strokeWidth="5"
+      <div className="card p-8 text-center">
+        <div className="relative w-32 h-32 mx-auto mb-4">
+          <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border)" strokeWidth="5" />
+            <circle cx="50" cy="50" r="42" fill="none" stroke="var(--accent)" strokeWidth="5"
               strokeDasharray={`${score * 264} ${264}`} strokeLinecap="round" />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-2xl font-semibold text-white">{score}</span>
-            <span className="text-xs text-zinc-600">/ 1.0</span>
+            <span className="text-3xl font-semibold" style={{ color: 'var(--text)' }}>{score}</span>
+            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>/ 1.0</span>
           </div>
         </div>
-        <p className="text-sm text-zinc-500">
+        <div className="flex items-center justify-center gap-1 mb-2">
+          <Star className="w-4 h-4" style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+          <span className="text-sm font-medium" style={{ color: '#10b981' }}>Excellent</span>
+        </div>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
           40% fulfillment + 25% on-time + 20% (1−disputes) + 15% chain integrity
         </p>
       </div>
-
-      {/* Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {metrics.map(m => (
-          <div key={m.label} className="border border-zinc-800 rounded-lg bg-zinc-900 p-4">
+          <div key={m.label} className="card p-5">
             <div className="flex items-start justify-between mb-2">
-              <m.icon className="w-4 h-4 text-zinc-500" />
-              <span className="text-xl font-semibold text-white">{m.value}</span>
+              <m.icon className="w-4.5 h-4.5" style={{ color: 'var(--text-muted)' }} />
+              <span className="text-xl font-semibold" style={{ color: 'var(--text)' }}>{m.value}</span>
             </div>
-            <p className="text-sm text-zinc-300">{m.label}</p>
-            <p className="text-xs text-zinc-600 mt-0.5">{m.desc}</p>
+            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{m.label}</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{m.desc}</p>
           </div>
         ))}
       </div>
-
-      <div className="border border-zinc-800 rounded-lg bg-zinc-900 p-4">
-        <p className="text-sm text-zinc-400">
-          <span className="text-zinc-300 font-medium">How is trust computed?</span>{' '}
+      <div className="card p-5">
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          <span className="font-medium" style={{ color: 'var(--text)' }}>How is trust computed?</span>{' '}
           Every completed order, on-time delivery, and evidence chain verification contributes.
           The SHA-256 hash-linked chain proves every step was authorized and tamper-free.
-          Trust is computed from evidence — merchants cannot self-declare their score.
         </p>
       </div>
     </div>

@@ -23,47 +23,38 @@ export default function NewProductPage() {
 
   return (
     <div className="max-w-md space-y-5">
-      <button onClick={() => router.back()} className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 text-sm">
+      <button onClick={() => router.back()} className="flex items-center gap-1.5 text-sm" style={{ color: 'var(--text-secondary)' }}>
         <ArrowLeft className="w-3.5 h-3.5" /> Back
       </button>
-
       <div>
-        <h1 className="text-xl font-semibold text-white">Add Product</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">List a new product</p>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Add Product</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>List a new product</p>
       </div>
-
-      <div className="border border-zinc-800 rounded-lg bg-zinc-900 p-5 space-y-4">
+      <div className="card p-6 space-y-4">
         <div>
-          <label className="block text-sm text-zinc-400 mb-1.5">Title</label>
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)}
-            className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
-            placeholder="Enter product title" />
+          <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Title</label>
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="input" placeholder="Enter product title" />
         </div>
         <div>
-          <label className="block text-sm text-zinc-400 mb-1.5">Description</label>
+          <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Description</label>
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
-            className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 resize-none"
-            placeholder="Enter product description" />
+            className="input" style={{ resize: 'none' }} placeholder="Enter product description" />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm text-zinc-400 mb-1.5">Price (₹)</label>
-            <input type="number" value={price} onChange={e => setPrice(e.target.value)}
-              className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
-              placeholder="Enter price" />
+            <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Price (₹)</label>
+            <input type="number" value={price} onChange={e => setPrice(e.target.value)} className="input" placeholder="Enter price" />
           </div>
           <div>
-            <label className="block text-sm text-zinc-400 mb-1.5">Category</label>
-            <select value={category} onChange={e => setCategory(e.target.value)}
-              className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm focus:outline-none focus:border-zinc-600 appearance-none capitalize"
-            >
-              {categories.map(c => <option key={c} value={c} className="bg-zinc-900">{c}</option>)}
+            <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Category</label>
+            <select value={category} onChange={e => setCategory(e.target.value)} className="input" style={{ appearance: 'none', textTransform: 'capitalize' }}>
+              {categories.map(c => <option key={c} value={c} style={{ textTransform: 'capitalize' }}>{c}</option>)}
             </select>
           </div>
         </div>
-        <button onClick={handleCreate} disabled={loading}
-          className="w-full py-2 rounded-md bg-white text-zinc-900 text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-40"
-        >{loading ? 'Creating...' : 'Create product'}</button>
+        <button onClick={handleCreate} disabled={loading} className="btn-primary w-full">
+          {loading ? 'Creating...' : 'Create product'}
+        </button>
       </div>
     </div>
   );

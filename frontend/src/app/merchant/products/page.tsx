@@ -13,26 +13,25 @@ export default function ProductsPage() {
   return (
     <div className="max-w-4xl space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-white">Products</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Manage your catalog</p>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Products</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Manage your catalog</p>
       </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {products.map(p => (
-          <div key={p.sku} className="border border-zinc-800 rounded-lg bg-zinc-900 p-4">
-            <div className="w-full h-24 rounded-md bg-zinc-800 flex items-center justify-center mb-3">
-              <Package className="w-8 h-8 text-zinc-700" />
+          <div key={p.sku} className="card p-5">
+            <div className="w-full h-24 rounded-lg flex items-center justify-center mb-3" style={{ background: 'var(--bg-subtle)' }}>
+              <Package className="w-8 h-8" style={{ color: 'var(--border)' }} />
             </div>
-            <h3 className="text-sm font-medium text-white">{p.title}</h3>
+            <h3 className="text-sm font-medium" style={{ color: 'var(--text)' }}>{p.title}</h3>
             <div className="flex items-center gap-2 mt-1.5 mb-3">
-              <span className="text-xs text-zinc-600 capitalize">{p.category}</span>
-              <span className={`text-xs ${p.in_stock ? 'text-emerald-400' : 'text-red-400'}`}>
+              <span className="badge badge-neutral" style={{ textTransform: 'capitalize' }}>{p.category}</span>
+              <span className={`badge ${p.in_stock ? 'badge-success' : 'badge-danger'}`}>
                 {p.in_stock ? 'In stock' : 'Out of stock'}
               </span>
             </div>
-            <div className="flex items-center justify-between pt-2.5 border-t border-zinc-800">
-              <span className="text-base font-semibold text-white">{formatPaise(p.price_paise)}</span>
-              <span className="text-xs text-zinc-600 font-mono">{p.sku}</span>
+            <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+              <span className="text-base font-semibold" style={{ color: 'var(--text)' }}>{formatPaise(p.price_paise)}</span>
+              <span className="hash-display">{p.sku}</span>
             </div>
           </div>
         ))}

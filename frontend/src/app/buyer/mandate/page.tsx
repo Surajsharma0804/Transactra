@@ -48,15 +48,15 @@ export default function MandatePage() {
   if (created) {
     return (
       <div className="max-w-md">
-        <div className="border border-zinc-800 rounded-lg bg-zinc-900 p-8 text-center">
-          <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
-            <Check className="w-5 h-5 text-emerald-400" />
+        <div className="card p-10 text-center">
+          <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(16,185,129,0.1)' }}>
+            <Check className="w-6 h-6" style={{ color: '#10b981' }} />
           </div>
-          <h2 className="text-base font-semibold text-white mb-1">Mandate created</h2>
-          <p className="text-sm text-zinc-500 mb-6">
+          <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--text)' }}>Mandate created</h2>
+          <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>
             Budget bounded to {formatPaise(Math.round(parseFloat(maxAmount) * 100))}
           </p>
-          <button onClick={() => router.push('/buyer/orders')} className="text-xs text-blue-400 hover:text-blue-300">
+          <button onClick={() => router.push('/buyer/orders')} className="text-sm font-medium" style={{ color: 'var(--accent)' }}>
             Continue to orders →
           </button>
         </div>
@@ -67,50 +67,37 @@ export default function MandatePage() {
   return (
     <div className="max-w-md space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-white">Create Mandate</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Set spending boundaries for your AI agent</p>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Create Mandate</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Set spending boundaries for your AI agent</p>
       </div>
 
-      <div className="border border-zinc-800 rounded-lg bg-zinc-900 p-5 space-y-4">
+      <div className="card p-6 space-y-4">
         <div>
-          <label className="block text-sm text-zinc-400 mb-2">Type</label>
+          <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Type</label>
           <div className="grid grid-cols-4 gap-1.5">
             {types.map(t => (
               <button key={t.value} onClick={() => setMandateType(t.value)}
-                className={`py-1.5 rounded-md text-xs font-medium transition-colors ${
-                  mandateType === t.value ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-                }`}
+                className={mandateType === t.value ? 'badge badge-info' : 'badge badge-neutral'}
+                style={{ cursor: 'pointer', padding: '6px 0', justifyContent: 'center', display: 'flex', borderRadius: '6px' }}
               >{t.label}</button>
             ))}
           </div>
         </div>
-
         <div>
-          <label className="block text-sm text-zinc-400 mb-1.5">Maximum amount (₹)</label>
-          <input type="number" value={maxAmount} onChange={e => setMaxAmount(e.target.value)}
-            className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
-            placeholder="Enter maximum amount" />
-          {totalPaise > 0 && <p className="text-xs text-zinc-600 mt-1">Cart: {formatPaise(totalPaise)}</p>}
+          <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Maximum amount (₹)</label>
+          <input type="number" value={maxAmount} onChange={e => setMaxAmount(e.target.value)} className="input" placeholder="Enter maximum amount" />
+          {totalPaise > 0 && <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Cart: {formatPaise(totalPaise)}</p>}
         </div>
-
         <div>
-          <label className="block text-sm text-zinc-400 mb-1.5">Allowed categories</label>
-          <input type="text" value={categories} onChange={e => setCategories(e.target.value)}
-            className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
-            placeholder="Enter categories (comma-separated, or leave empty for all)" />
+          <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Allowed categories</label>
+          <input type="text" value={categories} onChange={e => setCategories(e.target.value)} className="input" placeholder="Enter categories (comma-separated, or leave empty for all)" />
         </div>
-
         <div>
-          <label className="block text-sm text-zinc-400 mb-1.5">Valid for (days)</label>
-          <input type="number" value={validDays} onChange={e => setValidDays(e.target.value)}
-            className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600"
-            placeholder="Enter number of days" min="1" max="365" />
+          <label className="block text-sm mb-1.5" style={{ color: 'var(--text-secondary)' }}>Valid for (days)</label>
+          <input type="number" value={validDays} onChange={e => setValidDays(e.target.value)} className="input" placeholder="Enter number of days" min="1" max="365" />
         </div>
-
-        <button onClick={handleCreate} disabled={loading}
-          className="w-full py-2 rounded-md bg-white text-zinc-900 text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-40 flex items-center justify-center gap-1.5"
-        >
-          {loading ? 'Creating...' : 'Create mandate'} <ArrowRight className="w-3.5 h-3.5" />
+        <button onClick={handleCreate} disabled={loading} className="btn-primary w-full">
+          {loading ? 'Creating...' : 'Create mandate'} <ArrowRight className="w-4 h-4" />
         </button>
       </div>
     </div>

@@ -20,20 +20,16 @@ export default function SearchPage() {
 
   const loadProducts = async () => {
     setLoading(true);
-    try {
-      const data = await productsApi.getAll();
-      setProducts(data.products || []);
-    } catch { setProducts([]); }
+    try { const d = await productsApi.getAll(); setProducts(d.products || []); }
+    catch { setProducts([]); }
     finally { setLoading(false); }
   };
 
   const handleSearch = async (q: string) => {
     if (!q.trim()) { loadProducts(); return; }
     setLoading(true);
-    try {
-      const data = await productsApi.search(q);
-      setProducts(data.products || []);
-    } catch { toast.error('Search failed'); }
+    try { const d = await productsApi.search(q); setProducts(d.products || []); }
+    catch { toast.error('Search failed'); }
     finally { setLoading(false); }
   };
 
@@ -47,68 +43,53 @@ export default function SearchPage() {
     r.lang = 'en-IN';
     r.onresult = (e: any) => { const t = e.results[0][0].transcript; setQuery(t); handleSearch(t); };
     r.onend = () => setIsListening(false);
-    r.start();
-    setIsListening(true);
+    r.start(); setIsListening(true);
   };
 
-  const categories = [...new Set(products.map((p) => p.category))];
-  const filtered = selectedCategory ? products.filter((p) => p.category === selectedCategory) : products;
+  const categories = [...new Set(products.map(p => p.category))];
+  const filtered = selectedCategory ? products.filter(p => p.category === selectedCategory) : products;
 
   return (
     <div className="max-w-5xl space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-white">Search Products</h1>
-        <p className="text-sm text-zinc-500 mt-0.5">Browse verified merchant catalog</p>
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Search Products</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>Browse verified merchant catalog</p>
       </div>
 
-      {/* Search */}
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-600" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-muted)' }} />
           <input
-            type="text"
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); handleSearch(e.target.value); }}
-            className="w-full pl-9 pr-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+            type="text" value={query}
+            onChange={e => { setQuery(e.target.value); handleSearch(e.target.value); }}
+            className="input" style={{ paddingLeft: '36px' }}
             placeholder="Search products..."
           />
         </div>
-        <button
-          onClick={toggleVoice}
-          className={`w-9 h-9 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
-            isListening ? 'border-red-500/40 bg-red-500/10 text-red-400' : 'border-zinc-800 bg-zinc-900 text-zinc-500 hover:text-zinc-300'
-          }`}
-        >
+        <button onClick={toggleVoice} className={isListening ? 'btn-primary' : 'btn-secondary'} style={{ padding: '0 12px' }}>
           {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* Filters */}
       {categories.length > 0 && (
         <div className="flex gap-1.5 flex-wrap">
-          <button
-            onClick={() => setSelectedCategory(null)}
-            className={`px-2.5 py-1 rounded-md text-xs transition-colors ${
-              !selectedCategory ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
+          <button onClick={() => setSelectedCategory(null)}
+            className={!selectedCategory ? 'badge badge-info' : 'badge badge-neutral'}
+            style={{ cursor: 'pointer', padding: '4px 10px', fontSize: '12px' }}
           >All</button>
-          {categories.map((c) => (
-            <button
-              key={c}
-              onClick={() => setSelectedCategory(c === selectedCategory ? null : c)}
-              className={`px-2.5 py-1 rounded-md text-xs capitalize transition-colors ${
-                c === selectedCategory ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
-              }`}
+          {categories.map(c => (
+            <button key={c} onClick={() => setSelectedCategory(c === selectedCategory ? null : c)}
+              className={c === selectedCategory ? 'badge badge-info' : 'badge badge-neutral'}
+              style={{ cursor: 'pointer', padding: '4px 10px', fontSize: '12px', textTransform: 'capitalize' }}
             >{c}</button>
           ))}
         </div>
       )}
 
-      {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="border border-zinc-800 rounded-lg p-4 space-y-3">
+            <div key={i} className="card p-5 space-y-3">
               <div className="skeleton h-28 w-full" />
               <div className="skeleton h-4 w-3/4" />
               <div className="skeleton h-4 w-1/2" />
@@ -116,21 +97,21 @@ export default function SearchPage() {
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map((p) => (
-            <div key={p.sku} className="border border-zinc-800 rounded-lg bg-zinc-900 p-4 flex flex-col">
-              <div className="w-full h-28 rounded-md bg-zinc-800 flex items-center justify-center mb-3 text-2xl">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map(p => (
+            <div key={p.sku} className="card p-5 flex flex-col">
+              <div className="w-full h-28 rounded-lg flex items-center justify-center mb-3 text-2xl" style={{ background: 'var(--bg-subtle)' }}>
                 {p.category === 'electronics' ? '📱' : p.category === 'clothing' ? '👕' : p.category === 'food' ? '🍕' : p.category === 'books' ? '📚' : '📦'}
               </div>
-              <h3 className="text-sm font-medium text-white line-clamp-2">{p.title}</h3>
-              <p className="text-xs text-zinc-600 line-clamp-1 mt-1">{p.merchant_name}</p>
-              <div className="flex items-center justify-between mt-auto pt-3">
-                <span className="text-base font-semibold text-white">{formatPaise(p.price_paise)}</span>
-                <button
-                  onClick={() => { addItem(p); toast.success('Added to cart'); }}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-md border border-zinc-700 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors"
-                >
-                  <Plus className="w-3 h-3" /> Add
+              <h3 className="text-sm font-medium line-clamp-2" style={{ color: 'var(--text)' }}>{p.title}</h3>
+              <p className="text-xs mt-1 line-clamp-1" style={{ color: 'var(--text-muted)' }}>{p.merchant_name}</p>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="badge badge-neutral" style={{ textTransform: 'capitalize' }}>{p.category}</span>
+              </div>
+              <div className="flex items-center justify-between mt-auto pt-4" style={{ borderTop: '1px solid var(--border)', marginTop: '12px' }}>
+                <span className="text-base font-semibold" style={{ color: 'var(--text)' }}>{formatPaise(p.price_paise)}</span>
+                <button onClick={() => { addItem(p); toast.success('Added to cart'); }} className="btn-secondary" style={{ padding: '5px 10px', fontSize: '12px' }}>
+                  <Plus className="w-3.5 h-3.5" /> Add
                 </button>
               </div>
             </div>
@@ -140,7 +121,8 @@ export default function SearchPage() {
 
       {!loading && filtered.length === 0 && (
         <div className="text-center py-16">
-          <p className="text-sm text-zinc-600">No products found</p>
+          <Search className="w-10 h-10 mx-auto mb-3" style={{ color: 'var(--border)' }} />
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No products found</p>
         </div>
       )}
     </div>

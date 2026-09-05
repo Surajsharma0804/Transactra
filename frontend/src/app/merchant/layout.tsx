@@ -2,10 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import {
-  ShieldCheck, Package, ShoppingBag, BarChart3,
-  Star, LogOut, ChevronLeft, ChevronRight, Plus,
-} from 'lucide-react';
+import { ShieldCheck, Package, ShoppingBag, BarChart3, Star, LogOut, ChevronLeft, ChevronRight, Plus, Sun, Moon } from 'lucide-react';
 import { useAuthStore, useUIStore } from '@/lib/store';
 
 const nav = [
@@ -19,7 +16,7 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout, role } = useAuthStore();
-  const { sidebarOpen, toggleSidebar } = useUIStore();
+  const { sidebarOpen, toggleSidebar, theme, toggleTheme } = useUIStore();
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/auth/login');
@@ -29,49 +26,46 @@ export default function MerchantLayout({ children }: { children: React.ReactNode
   if (!isAuthenticated || role === 'buyer') return null;
 
   return (
-    <div className="flex min-h-screen">
-      <aside
-        className="fixed top-0 left-0 h-screen flex flex-col border-r border-zinc-800 bg-zinc-950 transition-all duration-200"
-        style={{ width: sidebarOpen ? 220 : 56 }}
-      >
-        <div className="flex items-center gap-2 px-3 h-12 border-b border-zinc-800">
-          <ShieldCheck className="w-4.5 h-4.5 text-blue-500 shrink-0" />
-          {sidebarOpen && <span className="text-sm font-semibold text-white truncate">Transactra</span>}
+    <div className="flex min-h-screen" style={{ background: 'var(--bg-subtle)' }}>
+      <aside className="fixed top-0 left-0 h-screen flex flex-col transition-all duration-200"
+        style={{ width: sidebarOpen ? 240 : 60, background: 'var(--sidebar-bg)', borderRight: '1px solid var(--border)' }}>
+        <div className="flex items-center gap-2.5 px-4 h-14" style={{ borderBottom: '1px solid var(--border)' }}>
+          <ShieldCheck className="w-5 h-5 shrink-0" style={{ color: 'var(--accent)' }} />
+          {sidebarOpen && <span className="text-sm font-semibold" style={{ color: 'var(--text)' }}>Transactra</span>}
         </div>
-
-        <nav className="flex-1 py-2 px-1.5 space-y-0.5 overflow-y-auto">
-          {nav.map((item) => {
+        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+          {nav.map(item => {
             const active = pathname === item.href;
             return (
-              <button key={item.href} onClick={() => router.push(item.href)}
-                className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-colors ${
-                  active ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900'
-                }`}
-              >
+              <button key={item.href} onClick={() => router.push(item.href)} className={`nav-item ${active ? 'nav-item-active' : ''}`}>
                 <item.icon className="w-4 h-4 shrink-0" />
-                {sidebarOpen && <span className="truncate">{item.label}</span>}
+                {sidebarOpen && <span>{item.label}</span>}
               </button>
             );
           })}
         </nav>
-
-        <div className="border-t border-zinc-800 p-1.5 space-y-0.5">
-          <button onClick={toggleSidebar} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors">
+        <div className="px-2 pb-3 space-y-0.5" style={{ borderTop: '1px solid var(--border)', paddingTop: '12px' }}>
+          <button onClick={toggleTheme} className="nav-item">
+            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            {sidebarOpen && <span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span>}
+          </button>
+          <button onClick={toggleSidebar} className="nav-item">
             {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
             {sidebarOpen && <span>Collapse</span>}
           </button>
-          <button onClick={() => { logout(); router.push('/'); }} className="w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm text-zinc-500 hover:text-red-400 hover:bg-zinc-900 transition-colors">
-            <LogOut className="w-4 h-4" />
-            {sidebarOpen && <span>Sign out</span>}
+          <button onClick={() => { logout(); router.push('/'); }} className="nav-item" style={{ color: 'var(--text-muted)' }}>
+            <LogOut className="w-4 h-4" />{sidebarOpen && <span>Sign out</span>}
           </button>
         </div>
       </aside>
-
-      <main className="flex-1 transition-all duration-200" style={{ marginLeft: sidebarOpen ? 220 : 56 }}>
-        <header className="sticky top-0 z-30 h-12 flex items-center justify-between px-6 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
-          <span className="text-sm text-zinc-500">{user?.name || 'Merchant'}</span>
-          <button onClick={() => router.push('/merchant/products/new')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-zinc-700 text-xs text-zinc-300 hover:bg-zinc-800 transition-colors">
-            <Plus className="w-3 h-3" /> Add product
+      <main className="flex-1 transition-all duration-200" style={{ marginLeft: sidebarOpen ? 240 : 60 }}>
+        <header className="sticky top-0 z-30 h-14 flex items-center justify-between px-6 backdrop-blur-sm"
+          style={{ background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border)' }}>
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+            Welcome, <span style={{ color: 'var(--text)', fontWeight: 500 }}>{user?.name || 'Merchant'}</span>
+          </span>
+          <button onClick={() => router.push('/merchant/products/new')} className="btn-secondary">
+            <Plus className="w-3.5 h-3.5" /> Add product
           </button>
         </header>
         <div className="p-6">{children}</div>
