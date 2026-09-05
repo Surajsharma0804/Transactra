@@ -57,7 +57,16 @@ app = FastAPI(
 
 # ── Register Routers ─────────────────────────────────
 from apps.api.routes.catalog import router as catalog_router
+from apps.api.routes.mandates import router as mandates_router
+from apps.api.routes.authorization import router as authorization_router
+from apps.api.routes.orders import router as orders_router
+from apps.api.routes.mcp import router as mcp_router
+
 app.include_router(catalog_router, prefix="/api/v1")
+app.include_router(mandates_router, prefix="/api/v1")
+app.include_router(authorization_router, prefix="/api/v1")
+app.include_router(orders_router, prefix="/api/v1")
+app.include_router(mcp_router, prefix="/api/v1")
 
 # ── CORS ─────────────────────────────────────────────
 
