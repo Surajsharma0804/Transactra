@@ -244,4 +244,3 @@ def get_hsts_header(settings) -> dict[str, str]:
     if settings.app_env == "production":
         return {"Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload"}
     return {}
-""", "toolAction": "Creating security module", "toolSummary": "Security module"}
