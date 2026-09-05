@@ -55,6 +55,9 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Register Routers ─────────────────────────────────
+from apps.api.routes.catalog import router as catalog_router
+app.include_router(catalog_router, prefix="/api/v1")
 
 # ── CORS ─────────────────────────────────────────────
 

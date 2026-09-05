@@ -1,0 +1,364 @@
+[
+  {
+    "merchant_key": "techmart",
+    "display_name": "TechMart Electronics",
+    "products": [
+      {
+        "sku": "LAP-TM-001", "title": "TechMart UltraBook Pro 14",
+        "description": "14-inch laptop with Intel i7-13700H, 16GB DDR5 RAM, 512GB NVMe SSD, OLED display, Windows 11",
+        "category": "laptops", "price_paise": 7499900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "Intel i7-13700H", "ram_gb": 16, "storage_gb": 512, "display_size": 14, "display_type": "OLED"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 10,
+        "quantity": 25
+      },
+      {
+        "sku": "LAP-TM-002", "title": "TechMart WorkStation 15",
+        "description": "15.6-inch workstation laptop with AMD Ryzen 9 7945HX, 32GB DDR5, 1TB SSD, RTX 4070",
+        "category": "laptops", "price_paise": 12999900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "AMD Ryzen 9 7945HX", "ram_gb": 32, "storage_gb": 1024, "display_size": 15.6, "gpu": "RTX 4070"},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 5, "shipping_paise": 0, "returnable": true, "return_window_days": 10,
+        "quantity": 10
+      },
+      {
+        "sku": "LAP-TM-003", "title": "TechMart Budget Book 14",
+        "description": "14-inch budget laptop with Intel i5-1340P, 8GB DDR4, 256GB SSD, IPS display",
+        "category": "laptops", "price_paise": 4499900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "Intel i5-1340P", "ram_gb": 8, "storage_gb": 256, "display_size": 14, "display_type": "IPS"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 50
+      },
+      {
+        "sku": "LAP-TM-004", "title": "TechMart RefurbBook 13 (Renewed)",
+        "description": "Refurbished 13-inch ultrabook, Intel i7-1260P, 16GB, 512GB SSD, grade A condition",
+        "category": "laptops", "price_paise": 3899900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "Intel i7-1260P", "ram_gb": 16, "storage_gb": 512, "display_size": 13, "grade": "A"},
+        "warranty_months": 6, "refurbished": true, "shipping_days": 5, "shipping_paise": 9900, "returnable": true, "return_window_days": 7,
+        "quantity": 8
+      },
+      {
+        "sku": "PHN-TM-001", "title": "TechMart ProPhone 15 Ultra",
+        "description": "6.7-inch flagship smartphone, Snapdragon 8 Gen 3, 12GB RAM, 256GB, 200MP camera",
+        "category": "smartphones", "price_paise": 8999900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "Snapdragon 8 Gen 3", "ram_gb": 12, "storage_gb": 256, "display_size": 6.7, "camera_mp": 200},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 30
+      },
+      {
+        "sku": "PHN-TM-002", "title": "TechMart MidRange Plus",
+        "description": "6.5-inch mid-range smartphone, Dimensity 8200, 8GB RAM, 128GB, 108MP camera",
+        "category": "smartphones", "price_paise": 2499900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "Dimensity 8200", "ram_gb": 8, "storage_gb": 128, "display_size": 6.5, "camera_mp": 108},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 100
+      },
+      {
+        "sku": "TAB-TM-001", "title": "TechMart ProTab 12.4",
+        "description": "12.4-inch tablet, Snapdragon 8cx Gen 3, 8GB RAM, 256GB, S-Pen included",
+        "category": "tablets", "price_paise": 5999900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "processor": "Snapdragon 8cx Gen 3", "ram_gb": 8, "storage_gb": 256, "display_size": 12.4, "stylus": true},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 15
+      },
+      {
+        "sku": "AUD-TM-001", "title": "TechMart ANC Pro Buds",
+        "description": "True wireless earbuds with active noise cancellation, 30hr battery, IPX5",
+        "category": "audio", "price_paise": 799900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "type": "TWS", "anc": true, "battery_hours": 30, "water_resistance": "IPX5"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 200
+      },
+      {
+        "sku": "AUD-TM-002", "title": "TechMart OverEar Studio",
+        "description": "Over-ear headphones with planar magnetic drivers, wired, studio grade",
+        "category": "audio", "price_paise": 1299900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "type": "over-ear", "driver": "planar magnetic", "wired": true},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 10,
+        "quantity": 30
+      },
+      {
+        "sku": "ACC-TM-001", "title": "TechMart USB-C Dock Pro",
+        "description": "USB-C docking station, 3x USB-A, 2x USB-C, HDMI 2.1, Ethernet, SD reader",
+        "category": "accessories", "price_paise": 449900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "ports_usb_a": 3, "ports_usb_c": 2, "hdmi": true, "ethernet": true},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 75
+      },
+      {
+        "sku": "ACC-TM-002", "title": "TechMart Mechanical Keyboard RGB",
+        "description": "Full-size mechanical keyboard, Cherry MX Brown switches, per-key RGB, USB-C",
+        "category": "accessories", "price_paise": 699900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "switch_type": "Cherry MX Brown", "layout": "full", "rgb": true, "connection": "USB-C"},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 40
+      },
+      {
+        "sku": "WTC-TM-001", "title": "TechMart SmartWatch Ultra",
+        "description": "Premium smartwatch, AMOLED 1.5 inch, GPS, heart rate, SpO2, 5ATM water resistance",
+        "category": "wearables", "price_paise": 2999900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "display_type": "AMOLED", "gps": true, "water_resistance": "5ATM", "sensors": ["heart_rate", "spo2", "accelerometer"]},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 45
+      },
+      {
+        "sku": "MON-TM-001", "title": "TechMart UltraWide 34 QHD",
+        "description": "34-inch ultrawide curved monitor, 3440x1440, 165Hz, IPS, USB-C PD 90W",
+        "category": "monitors", "price_paise": 4499900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "display_size": 34, "resolution": "3440x1440", "refresh_hz": 165, "panel": "IPS", "usb_c_pd": true},
+        "warranty_months": 36, "refurbished": false, "shipping_days": 5, "shipping_paise": 49900, "returnable": true, "return_window_days": 10,
+        "quantity": 12
+      },
+      {
+        "sku": "STO-TM-001", "title": "TechMart Portable SSD 2TB",
+        "description": "USB-C portable SSD, 2TB, 2000MB/s read, IP67, hardware encryption",
+        "category": "storage", "price_paise": 1499900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "capacity_tb": 2, "speed_mbps": 2000, "interface": "USB-C", "encryption": true},
+        "warranty_months": 60, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 60
+      },
+      {
+        "sku": "CAM-TM-001", "title": "TechMart 4K Webcam Pro",
+        "description": "4K webcam with auto-framing, dual noise-cancelling mics, USB-C",
+        "category": "accessories", "price_paise": 899900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "resolution": "4K", "auto_frame": true, "mic": true},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 35
+      },
+      {
+        "sku": "NET-TM-001", "title": "TechMart WiFi 7 Mesh Router (3-pack)",
+        "description": "WiFi 7 tri-band mesh system, 3 nodes, 10Gbps aggregate, covers 6000 sq ft",
+        "category": "networking", "price_paise": 2999900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "wifi_standard": "WiFi 7", "nodes": 3, "coverage_sqft": 6000},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 20
+      },
+      {
+        "sku": "PWR-TM-001", "title": "TechMart 100W GaN Charger",
+        "description": "100W GaN USB-C charger, 3 ports, universal voltage, foldable prongs",
+        "category": "accessories", "price_paise": 349900, "currency": "INR",
+        "attributes": {"brand": "TechMart", "wattage": 100, "ports": 3, "type": "GaN"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 150
+      }
+    ]
+  },
+  {
+    "merchant_key": "gadgetworld",
+    "display_name": "GadgetWorld India",
+    "products": [
+      {
+        "sku": "LAP-GW-001", "title": "GadgetWorld Creator 16 OLED",
+        "description": "16-inch creative laptop, Intel i9-13900H, 32GB, 1TB, RTX 4060, color-accurate OLED",
+        "category": "laptops", "price_paise": 14999900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "Intel i9-13900H", "ram_gb": 32, "storage_gb": 1024, "display_size": 16, "gpu": "RTX 4060", "display_type": "OLED"},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 5, "shipping_paise": 0, "returnable": true, "return_window_days": 15,
+        "quantity": 5
+      },
+      {
+        "sku": "LAP-GW-002", "title": "GadgetWorld Student 14",
+        "description": "14-inch student laptop, AMD Ryzen 5 7530U, 8GB, 512GB SSD, lightweight 1.4kg",
+        "category": "laptops", "price_paise": 3999900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "AMD Ryzen 5 7530U", "ram_gb": 8, "storage_gb": 512, "display_size": 14, "weight_kg": 1.4},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 40
+      },
+      {
+        "sku": "LAP-GW-003", "title": "GadgetWorld Gaming Beast 17",
+        "description": "17.3-inch gaming laptop, AMD Ryzen 9, 32GB, 1TB, RTX 4080, 240Hz display",
+        "category": "laptops", "price_paise": 19999900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "AMD Ryzen 9 7945HX", "ram_gb": 32, "storage_gb": 1024, "display_size": 17.3, "gpu": "RTX 4080", "refresh_hz": 240},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 7, "shipping_paise": 0, "returnable": true, "return_window_days": 10,
+        "quantity": 3
+      },
+      {
+        "sku": "PHN-GW-001", "title": "GadgetWorld Pixel Prime 7",
+        "description": "6.3-inch premium smartphone, Tensor G4, 12GB RAM, 256GB, 50MP triple camera",
+        "category": "smartphones", "price_paise": 7499900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "Tensor G4", "ram_gb": 12, "storage_gb": 256, "display_size": 6.3, "camera_mp": 50},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 20
+      },
+      {
+        "sku": "PHN-GW-002", "title": "GadgetWorld Budget King 5G",
+        "description": "6.6-inch budget 5G smartphone, Dimensity 7050, 6GB RAM, 128GB, 5000mAh",
+        "category": "smartphones", "price_paise": 1499900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "Dimensity 7050", "ram_gb": 6, "storage_gb": 128, "display_size": 6.6, "battery_mah": 5000, "connectivity": "5G"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 200
+      },
+      {
+        "sku": "PHN-GW-003", "title": "GadgetWorld FlipFold Z (Renewed)",
+        "description": "Refurbished foldable smartphone, Snapdragon 8 Gen 2, 12GB, 256GB, grade A+",
+        "category": "smartphones", "price_paise": 5499900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "Snapdragon 8 Gen 2", "ram_gb": 12, "storage_gb": 256, "foldable": true, "grade": "A+"},
+        "warranty_months": 6, "refurbished": true, "shipping_days": 3, "shipping_paise": 9900, "returnable": true, "return_window_days": 7,
+        "quantity": 7
+      },
+      {
+        "sku": "TAB-GW-001", "title": "GadgetWorld EduTab 10",
+        "description": "10.1-inch education tablet, MediaTek Helio, 4GB RAM, 64GB, kids mode",
+        "category": "tablets", "price_paise": 1299900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "processor": "MediaTek Helio G80", "ram_gb": 4, "storage_gb": 64, "display_size": 10.1, "kids_mode": true},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 60
+      },
+      {
+        "sku": "AUD-GW-001", "title": "GadgetWorld Bass Cannon BT Speaker",
+        "description": "Portable Bluetooth speaker, 40W, IPX7, 24hr battery, TWS pairing",
+        "category": "audio", "price_paise": 499900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "type": "bluetooth speaker", "wattage": 40, "water_resistance": "IPX7", "battery_hours": 24},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 80
+      },
+      {
+        "sku": "AUD-GW-002", "title": "GadgetWorld Neckband Sport",
+        "description": "Bluetooth neckband earphones, 28hr battery, fast charge, sweat-proof",
+        "category": "audio", "price_paise": 149900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "type": "neckband", "battery_hours": 28, "water_resistance": "IPX4"},
+        "warranty_months": 6, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 300
+      },
+      {
+        "sku": "PWR-GW-001", "title": "GadgetWorld 20000mAh Power Bank",
+        "description": "20000mAh power bank, 65W PD, 3 ports, LED display, USB-C in/out",
+        "category": "accessories", "price_paise": 249900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "capacity_mah": 20000, "wattage": 65, "ports": 3, "type": "power bank"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 120
+      },
+      {
+        "sku": "WTC-GW-001", "title": "GadgetWorld FitBand 7",
+        "description": "Fitness band, AMOLED 1.1 inch, SpO2, sleep tracking, 14 day battery",
+        "category": "wearables", "price_paise": 349900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "display_type": "AMOLED", "battery_days": 14, "sensors": ["heart_rate", "spo2", "sleep"]},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 250
+      },
+      {
+        "sku": "STO-GW-001", "title": "GadgetWorld 256GB microSD UHS-I",
+        "description": "256GB microSD card, UHS-I U3 V30, A2, 170MB/s read, with adapter",
+        "category": "storage", "price_paise": 199900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "capacity_gb": 256, "speed_mbps": 170, "type": "microSD"},
+        "warranty_months": 120, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 500
+      },
+      {
+        "sku": "SMH-GW-001", "title": "GadgetWorld Smart Plug WiFi (4-pack)",
+        "description": "WiFi smart plugs, 4-pack, works with Alexa/Google, energy monitoring, schedule",
+        "category": "smart_home", "price_paise": 299900, "currency": "INR",
+        "attributes": {"brand": "GadgetWorld", "connectivity": "WiFi", "pack_count": 4, "voice_assistants": ["Alexa", "Google"]},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 150
+      }
+    ]
+  },
+  {
+    "merchant_key": "digitalbazaar",
+    "display_name": "DigitalBazaar Premium",
+    "products": [
+      {
+        "sku": "LAP-DB-001", "title": "DigitalBazaar ThinkPad X1 Carbon Gen 11",
+        "description": "14-inch business ultrabook, Intel i7-1365U, 16GB, 512GB, MIL-STD-810H, 2.48lbs",
+        "category": "laptops", "price_paise": 13499900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "processor": "Intel i7-1365U", "ram_gb": 16, "storage_gb": 512, "display_size": 14, "mil_spec": true},
+        "warranty_months": 36, "refurbished": false, "shipping_days": 5, "shipping_paise": 0, "returnable": true, "return_window_days": 15,
+        "quantity": 8
+      },
+      {
+        "sku": "LAP-DB-002", "title": "DigitalBazaar ChromeBook Edu 11",
+        "description": "11.6-inch Chromebook, MediaTek Kompanio 520, 4GB, 64GB eMMC, ChromeOS",
+        "category": "laptops", "price_paise": 1999900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "processor": "MediaTek Kompanio 520", "ram_gb": 4, "storage_gb": 64, "display_size": 11.6, "os": "ChromeOS"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 100
+      },
+      {
+        "sku": "LAP-DB-003", "title": "DigitalBazaar MacAir Clone M3 (Renewed)",
+        "description": "Refurbished 13-inch ultrabook, Apple M3 chip, 8GB unified, 256GB SSD, grade B+",
+        "category": "laptops", "price_paise": 6499900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "processor": "Apple M3", "ram_gb": 8, "storage_gb": 256, "display_size": 13, "grade": "B+"},
+        "warranty_months": 3, "refurbished": true, "shipping_days": 5, "shipping_paise": 19900, "returnable": true, "return_window_days": 7,
+        "quantity": 4
+      },
+      {
+        "sku": "PHN-DB-001", "title": "DigitalBazaar Galaxy Ultra S24",
+        "description": "6.8-inch flagship, Snapdragon 8 Gen 3, 12GB, 512GB, S-Pen, titanium frame",
+        "category": "smartphones", "price_paise": 11999900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "processor": "Snapdragon 8 Gen 3", "ram_gb": 12, "storage_gb": 512, "display_size": 6.8, "stylus": true, "material": "titanium"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 15
+      },
+      {
+        "sku": "PHN-DB-002", "title": "DigitalBazaar Value 5G Lite",
+        "description": "6.5-inch entry-level 5G phone, Dimensity 6100, 4GB, 64GB, 5000mAh",
+        "category": "smartphones", "price_paise": 999900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "processor": "Dimensity 6100", "ram_gb": 4, "storage_gb": 64, "display_size": 6.5, "battery_mah": 5000, "connectivity": "5G"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 300
+      },
+      {
+        "sku": "TAB-DB-001", "title": "DigitalBazaar iPad Rival Pro 11",
+        "description": "11-inch premium tablet, M2 chip, 8GB, 128GB, Liquid Retina, Apple Pencil support",
+        "category": "tablets", "price_paise": 6999900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "processor": "M2", "ram_gb": 8, "storage_gb": 128, "display_size": 11, "stylus": true},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 10,
+        "quantity": 18
+      },
+      {
+        "sku": "AUD-DB-001", "title": "DigitalBazaar AirPods Max Rival",
+        "description": "Premium over-ear headphones, ANC, spatial audio, 20hr battery, aluminum build",
+        "category": "audio", "price_paise": 4499900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "type": "over-ear", "anc": true, "spatial_audio": true, "battery_hours": 20, "material": "aluminum"},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 10,
+        "quantity": 10
+      },
+      {
+        "sku": "AUD-DB-002", "title": "DigitalBazaar Budget Buds SE",
+        "description": "True wireless earbuds, basic ANC, 24hr battery with case, IPX4",
+        "category": "audio", "price_paise": 199900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "type": "TWS", "anc": true, "battery_hours": 24, "water_resistance": "IPX4"},
+        "warranty_months": 6, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 500
+      },
+      {
+        "sku": "MON-DB-001", "title": "DigitalBazaar 4K HDR 27 Monitor",
+        "description": "27-inch 4K HDR monitor, 3840x2160, HDR600, 144Hz, USB-C PD 65W, KVM switch",
+        "category": "monitors", "price_paise": 3999900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "display_size": 27, "resolution": "3840x2160", "hdr": "HDR600", "refresh_hz": 144, "usb_c_pd": true},
+        "warranty_months": 36, "refurbished": false, "shipping_days": 5, "shipping_paise": 49900, "returnable": true, "return_window_days": 10,
+        "quantity": 10
+      },
+      {
+        "sku": "SMH-DB-001", "title": "DigitalBazaar Smart LED Strip 10m",
+        "description": "10m WiFi smart LED strip, RGBWW, music sync, cut-to-length, app control",
+        "category": "smart_home", "price_paise": 199900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "length_m": 10, "color": "RGBWW", "connectivity": "WiFi", "music_sync": true},
+        "warranty_months": 6, "refurbished": false, "shipping_days": 3, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 200
+      },
+      {
+        "sku": "GMG-DB-001", "title": "DigitalBazaar ProController X",
+        "description": "Wireless game controller, hall effect sticks, 40hr battery, USB-C, BT+2.4GHz",
+        "category": "gaming", "price_paise": 399900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "type": "controller", "connection": ["Bluetooth", "2.4GHz", "USB-C"], "battery_hours": 40, "hall_effect": true},
+        "warranty_months": 12, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 55
+      },
+      {
+        "sku": "GMG-DB-002", "title": "DigitalBazaar Gaming Mouse 26K DPI",
+        "description": "Wireless gaming mouse, 26000 DPI optical, 8 buttons, 70hr battery, <1ms latency",
+        "category": "gaming", "price_paise": 499900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "type": "mouse", "dpi": 26000, "buttons": 8, "wireless": true, "battery_hours": 70},
+        "warranty_months": 24, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 90
+      },
+      {
+        "sku": "NET-DB-001", "title": "DigitalBazaar Cat6a Patch Cable 3m (5-pack)",
+        "description": "Cat6a shielded Ethernet cables, 3m, 10Gbps, gold-plated connectors, 5-pack",
+        "category": "networking", "price_paise": 99900, "currency": "INR",
+        "attributes": {"brand": "DigitalBazaar", "cable_type": "Cat6a", "length_m": 3, "pack_count": 5, "shielded": true},
+        "warranty_months": 120, "refurbished": false, "shipping_days": 2, "shipping_paise": 0, "returnable": true, "return_window_days": 7,
+        "quantity": 400
+      }
+    ]
+  }
+]
