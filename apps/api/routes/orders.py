@@ -15,8 +15,10 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, HTTPException, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from pydantic import BaseModel, Field, field_validator
+
+from apps.api.security import CurrentUser, get_current_user
 
 from backend.kernel.domain.order import (
     Order, OrderStatus, Payment, PaymentLocalState, PaymentProviderState,
@@ -102,17 +104,20 @@ class EvidenceProofResponse(BaseModel):
 # ── Endpoints ────────────────────────────────────────
 
 @router.post("", response_model=OrderResponse, status_code=201)
-async def create_order(req: CreateOrderRequest) -> OrderResponse:
+async def create_order(
+    req: CreateOrderRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> OrderResponse:
     """
     Create an order after successful authorization.
 
-    Requires a valid authorization_decision_id that was previously
-    returned by the /authorize endpoint.
-
-    Creates an evidence chain for the order and records the creation event.
+    Requires authentication. User can only create orders for themselves.
 
     Complexity: O(1).
     """
+    # Ownership check
+    if str(req.user_id) != current_user.id:
+        raise HTTPException(status_code=403, detail="Cannot create order for another user")
     # Idempotency check
     for existing in _orders.values():
         if existing.get("idempotency_key") == req.idempotency_key:
@@ -173,11 +178,17 @@ async def create_order(req: CreateOrderRequest) -> OrderResponse:
 
 
 @router.get("/{order_id}", response_model=OrderResponse)
-async def get_order(order_id: UUID) -> OrderResponse:
-    """Get order details. O(1)."""
+async def get_order(
+    order_id: UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> OrderResponse:
+    """Get order details. O(1). Requires authentication."""
     order = _orders.get(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
+    # Ownership check
+    if str(order["user_id"]) != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
     chain = _evidence_chains.get(order_id)
     return OrderResponse(
         order_id=order["order_id"],
@@ -192,7 +203,11 @@ async def get_order(order_id: UUID) -> OrderResponse:
 
 
 @router.post("/{order_id}/payment", response_model=PaymentResponse, status_code=201)
-async def initiate_payment(order_id: UUID, req: InitiatePaymentRequest) -> PaymentResponse:
+async def initiate_payment(
+    order_id: UUID,
+    req: InitiatePaymentRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> PaymentResponse:
     """
     Initiate payment for an order.
 
@@ -304,7 +319,10 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
 
 
 @router.get("/{order_id}/proof", response_model=EvidenceProofResponse)
-async def get_proof(order_id: UUID) -> EvidenceProofResponse:
+async def get_proof(
+    order_id: UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> EvidenceProofResponse:
     """
     Get the evidence chain (trust proof) for an order.
 
