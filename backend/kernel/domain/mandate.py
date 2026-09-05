@@ -67,6 +67,8 @@ class Mandate:
     # Cart binding (set on authorization, not creation)
     cart_hash: str | None = None
     bound_amount_paise: int | None = None
+    # Delegation chain — if set, this mandate was delegated from a parent
+    parent_mandate_id: UUID | None = None
     # Time window
     valid_from: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     valid_until: datetime | None = None
@@ -103,6 +105,53 @@ class Mandate:
         if self.allowed_merchant_ids is None:
             return True  # No restriction
         return merchant_id in self.allowed_merchant_ids
+
+    @classmethod
+    def validate_delegation(cls, child: "Mandate", parent: "Mandate") -> tuple[bool, str]:
+        """
+        Validate that child authority ⊆ parent authority.
+
+        Delegation must NEVER escalate privileges:
+        - Child budget ≤ parent remaining budget
+        - Child categories ⊆ parent categories (or parent has no restriction)
+        - Child merchants ⊆ parent merchants (or parent has no restriction)
+        - Child valid_until ≤ parent valid_until (cannot outlive parent)
+
+        Returns (is_valid, reason).
+
+        Complexity: O(k) where k = max(categories, merchants).
+        """
+        # Budget check: child cannot exceed parent's remaining budget
+        if child.max_amount_paise > parent.remaining_paise():
+            return False, (
+                f"Child budget ({child.max_amount_paise} paise) exceeds "
+                f"parent remaining ({parent.remaining_paise()} paise)"
+            )
+
+        # Category check: child categories must be subset of parent
+        if parent.allowed_categories is not None and child.allowed_categories is not None:
+            if not child.allowed_categories.issubset(parent.allowed_categories):
+                extra = child.allowed_categories - parent.allowed_categories
+                return False, f"Child has categories not in parent: {extra}"
+        elif parent.allowed_categories is not None and child.allowed_categories is None:
+            # Parent restricts categories but child has no restriction → escalation
+            return False, "Child has unrestricted categories but parent is restricted"
+
+        # Merchant check: child merchants must be subset of parent
+        if parent.allowed_merchant_ids is not None and child.allowed_merchant_ids is not None:
+            if not child.allowed_merchant_ids.issubset(parent.allowed_merchant_ids):
+                return False, "Child has merchants not in parent's allowed list"
+        elif parent.allowed_merchant_ids is not None and child.allowed_merchant_ids is None:
+            return False, "Child has unrestricted merchants but parent is restricted"
+
+        # Time window check: child cannot outlive parent
+        if parent.valid_until is not None:
+            if child.valid_until is None:
+                return False, "Child has no expiry but parent expires"
+            if child.valid_until > parent.valid_until:
+                return False, "Child expires after parent"
+
+        return True, "Delegation valid: child ⊆ parent"
 
     def __post_init__(self) -> None:
         if self.max_amount_paise <= 0:
