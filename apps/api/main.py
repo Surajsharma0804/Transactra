@@ -61,6 +61,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Serve Demo UI ────────────────────────────────────
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
+
+_project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+@app.get("/demo", include_in_schema=False)
+async def serve_demo():
+    return FileResponse(os.path.join(_project_root, "demo.html"))
+
 # ── Register Routers ─────────────────────────────────
 from apps.api.routes.catalog import router as catalog_router
 from apps.api.routes.mandates import router as mandates_router

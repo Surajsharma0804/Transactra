@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactra — Agentic Commerce Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-card: #111827;
+            --bg-card-hover: #1a2332;
+            --bg-input: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --accent-glow: rgba(99, 102, 241, 0.25);
+            --success: #10b981;
+            --success-bg: rgba(16, 185, 129, 0.1);
+            --danger: #ef4444;
+            --danger-bg: rgba(239, 68, 68, 0.1);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245, 158, 11, 0.1);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border: #1e293b;
+            --border-accent: rgba(99, 102, 241, 0.3);
+            --gradient-accent: linear-gradient(135deg, #6366f1, #8b5cf6, #a78bfa);
+            --gradient-success: linear-gradient(135deg, #10b981, #34d399);
+            --gradient-danger: linear-gradient(135deg, #ef4444, #f87171);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── Header ───────────────────────── */
+        .header {
+            background: linear-gradient(180deg, rgba(99,102,241,0.08) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+        .logo-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 0.75rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: var(--success-bg);
+            border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 99px;
+            font-size: 0.8rem;
+            color: var(--success);
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: pulse-dot 2s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── Role Tabs ────────────────────── */
+        .role-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            padding: 1.5rem 2rem;
+        }
+        .role-tab {
+            padding: 0.8rem 2rem;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .role-tab:hover {
+            border-color: var(--border-accent);
+            color: var(--text-primary);
+        }
+        .role-tab.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+        .role-icon { font-size: 1.2rem; }
+
+        /* ── Main Layout ──────────────────── */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 3rem;
+        }
+        .panel { display: none; }
+        .panel.active { display: block; }
+
+        /* ── Flow Steps ───────────────────── */
+        .flow-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .flow-subtitle {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .step-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        .step-card.full-width {
+            grid-column: 1 / -1;
+        }
+        .step-number {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: white;
+        }
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .step-icon {
+            font-size: 1.5rem;
+        }
+        .step-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .step-desc {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Buttons ──────────────────────── */
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-primary {
+            background: var(--gradient-accent);
+            color: white;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 4px 20px var(--accent-glow);
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-success {
+            background: var(--gradient-success);
+            color: white;
+        }
+        .btn-danger {
+            background: var(--gradient-danger);
+            color: white;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+        .btn-outline:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── Result Cards ─────────────────── */
+        .result {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            display: none;
+            animation: fadeIn 0.4s;
+            line-height: 1.7;
+            overflow-x: auto;
+        }
+        .result.show { display: block; }
+        .result.success {
+            background: var(--success-bg);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: var(--success);
+        }
+        .result.error {
+            background: var(--danger-bg);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: var(--danger);
+        }
+        .result.info {
+            background: rgba(99,102,241,0.08);
+            border: 1px solid var(--border-accent);
+            color: var(--accent-hover);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Rule Trail ───────────────────── */
+        .rule-trail {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.4rem;
+            margin-top: 0.75rem;
+        }
+        .rule-chip {
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .rule-pass {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+        .rule-fail {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1px solid rgba(239,68,68,0.2);
+        }
+
+        /* ── Evidence Chain Vis ────────────── */
+        .chain-vis {
+            display: flex;
+            gap: 0;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+        .chain-node {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            background: rgba(99,102,241,0.12);
+            border: 1px solid var(--border-accent);
+            color: var(--accent-hover);
+        }
+        .chain-arrow {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            padding: 0 0.3rem;
+        }
+
+        /* ── Dual State Viz ───────────────── */
+        .dual-state {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.75rem;
+        }
+        .state-box {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .state-box.local {
+            background: var(--warning-bg);
+            border: 1px solid rgba(245,158,11,0.3);
+        }
+        .state-box.provider {
+            background: rgba(99,102,241,0.08);
+            border: 1px solid var(--border-accent);
+        }
+        .state-box.confirmed {
+            background: var(--success-bg);
+            border: 1px solid rgba(16,185,129,0.3);
+        }
+        .state-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.3rem;
+        }
+        .state-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* ── Flow Connector ───────────────── */
+        .flow-connector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            grid-column: 1 / -1;
+        }
+
+        /* ── Merchant Tools ───────────────── */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .tool-chip {
+            padding: 0.6rem 0.8rem;
+            border-radius: 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .tool-chip:hover {
+            border-color: var(--accent);
+            background: rgba(99,102,241,0.08);
+        }
+        .tool-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .tool-cap {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Loading ──────────────────────── */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .steps-grid { grid-template-columns: 1fr; }
+            .rule-trail { grid-template-columns: repeat(2, 1fr); }
+            .tools-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div style="display:flex;align-items:baseline;">
+        <span class="logo">TRANSACTRA</span>
+        <span class="logo-sub">Trust Infrastructure for Agentic Commerce</span>
+    </div>
+    <div class="status-badge">
+        <span class="status-dot"></span>
+        API Live — 127.0.0.1:8000
+    </div>
+</div>
+
+<!-- Role Tabs -->
+<div class="role-tabs">
+    <div class="role-tab active" onclick="switchRole('user')" id="tab-user">
+        <span class="role-icon">👤</span> User (Buyer)
+    </div>
+    <div class="role-tab" onclick="switchRole('merchant')" id="tab-merchant">
+        <span class="role-icon">🏪</span> Merchant
+    </div>
+    <div class="role-tab" onclick="switchRole('agent')" id="tab-agent">
+        <span class="role-icon">🤖</span> AI Agent
+    </div>
+</div>
+
+<div class="main">
+
+    <!-- ═══════════════════════════════════ USER PANEL ═══════════════════════════════════ -->
+    <div class="panel active" id="panel-user">
+        <div class="flow-title">👤 User (Buyer) Flow</div>
+        <div class="flow-subtitle">
+            You set the rules. Your AI agent shops within your limits. Every action is authorized and proven.
+        </div>
+
+        <div class="steps-grid">
+            <!-- Step 1: Set Mandate -->
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-header">
+                    <span class="step-icon">📋</span>
+                    <span class="step-title">Set Spending Mandate</span>
+                </div>
+                <div class="step-desc">
+                    Define what your AI agent can spend. Set maximum budget (₹1,00,000), 
+                    allowed categories (laptops, tablets), and time limits.
+                </div>
+                <button class="btn btn-primary" onclick="userCreateMandate()" id="btn-mandate">
+                    Create Mandate →
+                </button>
+                <div class="result" id="result-mandate"></div>
+            </div>
+
+            <!-- Step 2: Approve Cart -->
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-header">
+                    <span class="step-icon">✅</span>
+                    <span class="step-title">Approve Cart (Consent)</span>
+                </div>
+                <div class="step-desc">
+                    Your agent found a laptop for ₹68,000. Review and approve the exact cart.
+                    Consent is cryptographically bound to the cart hash — if anything changes, consent breaks.
+                </div>
+                <button class="btn btn-primary" onclick="userCreateConsent()" id="btn-consent" disabled>
+                    Approve Cart →
+                </button>
+                <div class="result" id="result-consent"></div>
+            </div>
+
+            <!-- Step 3: Authorization -->
+            <div class="step-card full-width">
+                <div class="step-number">3</div>
+                <div class="step-header">
+                    <span class="step-icon">🔐</span>
+                    <span class="step-title">16-Predicate Authorization Gate</span>
+                </div>
+                <div class="step-desc">
+                    The kernel runs 16 deterministic checks. If ANY fails → DENY. All pass → ALLOW.
+                    No AI can bypass this. Short-circuits on first failure for O(1) best-case.
+                </div>
+                <div style="display:flex;gap:0.75rem;">
+                    <button class="btn btn-success" onclick="userAuthorize(true)" id="btn-auth" disabled>
+                        ✓ Run Gate (All Valid) →
+                    </button>
+                    <button class="btn btn-danger" onclick="userAuthorize(false)" id="btn-auth-deny" disabled>
+                        ✗ Test Deny (Principal Inactive)
+                    </button>
+                </div>
+                <div class="result" id="result-auth"></div>
+                <div id="auth-trail"></div>
+            </div>
+
+            <!-- Step 4: Order + Payment -->
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <div class="step-header">
+                    <span class="step-icon">📦</span>
+                    <span class="step-title">Order Created</span>
+                </div>
+                <div class="step-desc">
+                    After authorization, the order is created with a hash-chained evidence trail.
+                    Every action is recorded immutably.
+                </div>
+                <button class="btn btn-primary" onclick="userCreateOrder()" id="btn-order" disabled>
+                    Create Order →
+                </button>
+                <div class="result" id="result-order"></div>
+            </div>
+
+            <!-- Step 5: Payment -->
+            <div class="step-card">
+                <div class="step-number">5</div>
+                <div class="step-header">
+                    <span class="step-icon">💳</span>
+                    <span class="step-title">Payment (Dual-State)</span>
+                </div>
+                <div class="step-desc">
+                    Payment initiated via Razorpay. <strong>local_state</strong> tracks what we did.
+                    <strong>provider_confirmed</strong> tracks what Razorpay confirmed. 
+                    <code>is_paid</code> is true ONLY when webhook confirms.
+                </div>
+                <button class="btn btn-primary" onclick="userInitiatePayment()" id="btn-payment" disabled>
+                    Initiate Payment →
+                </button>
+                <div id="payment-states"></div>
+                <div class="result" id="result-payment"></div>
+            </div>
+
+            <!-- Step 6: Proof -->
+            <div class="step-card full-width">
+                <div class="step-number">6</div>
+                <div class="step-header">
+                    <span class="step-icon">🔗</span>
+                    <span class="step-title">Evidence Proof (Hash Chain)</span>
+                </div>
+                <div class="step-desc">
+                    View the complete trust proof — every step is hash-linked.
+                    Tampering with any record breaks the chain. Verifiable by anyone.
+                </div>
+                <button class="btn btn-primary" onclick="userViewProof()" id="btn-proof" disabled>
+                    View Proof →
+                </button>
+                <div id="proof-chain"></div>
+                <div class="result" id="result-proof"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ MERCHANT PANEL ═══════════════════════════════════ -->
+    <div class="panel" id="panel-merchant">
+        <div class="flow-title">🏪 Merchant Flow</div>
+        <div class="flow-subtitle">
+            Manage your catalog, respond to negotiations, and receive verified payments.
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <div class="step-header">
+                    <span class="step-icon">📦</span>
+                    <span class="step-title">Manage Catalog</span>
+                </div>
+                <div class="step-desc">
+                    Add, update, or remove products from your catalog.
+                    Products are searchable via the 3-stage pipeline (SQL → Vector → Recheck).
+                </div>
+                <button class="btn btn-primary" onclick="merchantListTools()">
+                    View My MCP Tools →
+                </button>
+                <div class="result" id="result-merchant-tools"></div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <div class="step-header">
+                    <span class="step-icon">🤝</span>
+                    <span class="step-title">Respond to Negotiations</span>
+                </div>
+                <div class="step-desc">
+                    Buyer agents can negotiate. You receive offers and can accept, reject,
+                    or counter-propose. Bounded to 5 rounds maximum.
+                </div>
+                <button class="btn btn-primary" onclick="merchantTestCapability()">
+                    Test Capability Access →
+                </button>
+                <div class="result" id="result-merchant-negotiate"></div>
+            </div>
+
+            <div class="step-card full-width">
+                <div class="step-number">3</div>
+                <div class="step-header">
+                    <span class="step-icon">💰</span>
+                    <span class="step-title">Receive Verified Payments</span>
+                </div>
+                <div class="step-desc">
+                    Every payment is backed by a hash-chained evidence trail.
+                    You can verify: the user authorized it, the cart matched, the amount is correct.
+                    No chargebacks from unauthorized AI spending.
+                </div>
+                <div class="dual-state" style="margin-bottom:1rem;">
+                    <div class="state-box" style="background:rgba(99,102,241,0.08);border:1px solid var(--border-accent);">
+                        <div class="state-label">What You Get</div>
+                        <div class="state-value" style="color:var(--accent-hover);">Proof of Authorization</div>
+                    </div>
+                    <div class="state-box confirmed">
+                        <div class="state-label">What It Means</div>
+                        <div class="state-value" style="color:var(--success);">Zero Dispute Risk</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════ AI AGENT PANEL ═══════════════════════════════════ -->
+    <div class="panel" id="panel-agent">
+        <div class="flow-title">🤖 AI Agent Flow</div>
+        <div class="flow-subtitle">
+            AI agents use MCP tools to search, compare, negotiate and propose — but CANNOT authorize or spend.
+        </div>
+
+        <div class="steps-grid">
+            <div class="step-card full-width">
+                <div class="step-number">✓</div>
+                <div class="step-header">
+                    <span class="step-icon">🛠️</span>
+                    <span class="step-title">Available MCP Tools (Capability-Gated)</span>
+                </div>
+                <div class="step-desc">
+                    Each tool requires specific capabilities. Buyer agents get 6 tools, merchant agents get 2.
+                    No agent gets unrestricted access.
+                </div>
+                <button class="btn btn-primary" onclick="agentListTools()">
+                    List Buyer Agent Tools →
+                </button>
+                <div id="agent-tools-grid"></div>
+                <div class="result" id="result-agent-tools"></div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">!</div>
+                <div class="step-header">
+                    <span class="step-icon">🚫</span>
+                    <span class="step-title">Access Denied Demo</span>
+                </div>
+                <div class="step-desc">
+                    Try invoking <code>request_authorization</code> with only 
+                    <code>search</code> capability. The system blocks it.
+                </div>
+                <button class="btn btn-danger" onclick="agentDenyDemo()">
+                    Try Unauthorized Access →
+                </button>
+                <div class="result" id="result-agent-deny"></div>
+            </div>
+
+            <div class="step-card">
+                <div class="step-number">✓</div>
+                <div class="step-header">
+                    <span class="step-icon">✅</span>
+                    <span class="step-title">Allowed Access Demo</span>
+                </div>
+                <div class="step-desc">
+                    Invoke <code>search_products</code> with the <code>search</code> capability.
+                    The system allows it.
+                </div>
+                <button class="btn btn-success" onclick="agentAllowDemo()">
+                    Try Authorized Access →
+                </button>
+                <div class="result" id="result-agent-allow"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8000/api/v1';
+let state = {};
+
+function uuid() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
+}
+
+function switchRole(role) {
+    document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`tab-${role}`).classList.add('active');
+    document.getElementById(`panel-${role}`).classList.add('active');
+}
+
+function showResult(id, data, type = 'success') {
+    const el = document.getElementById(id);
+    el.className = `result show ${type}`;
+    el.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+}
+
+async function api(method, path, body) {
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-Correlation-ID': 'demo-ui-' + uuid() },
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(API + path, opts);
+    return r.json();
+}
+
+// ── USER FLOW ──────────────────────────────────
+
+async function userCreateMandate() {
+    const btn = document.getElementById('btn-mandate');
+    btn.innerHTML = '<span class="spinner"></span> Creating...';
+    btn.disabled = true;
+
+    state.user_id = uuid();
+    state.agent_id = uuid();
+    state.merchant_id = uuid();
+
+    const data = await api('POST', '/mandates', {
+        user_id: state.user_id,
+        agent_id: state.agent_id,
+        mandate_type: 'per_transaction',
+        max_amount_paise: 10000000,
+        allowed_categories: ['laptops', 'tablets'],
+    });
+
+    state.mandate_id = data.mandate_id;
+    btn.innerHTML = '✓ Mandate Created';
+    btn.className = 'btn btn-success';
+
+    showResult('result-mandate',
+        `✓ Mandate ${data.mandate_id.slice(0,8)}...\n  Budget: ₹${(data.max_amount_paise/100).toLocaleString()}\n  Categories: laptops, tablets\n  Status: ${data.status}`
+    );
+
+    document.getElementById('btn-consent').disabled = false;
+}
+
+async function userCreateConsent() {
+    const btn = document.getElementById('btn-consent');
+    btn.innerHTML = '<span class="spinner"></span> Approving...';
+    btn.disabled = true;
+
+    state.cart_hash = 'a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890';
+
+    const data = await api('POST', `/mandates/${state.mandate_id}/consent`, {
+        user_id: state.user_id,
+        cart_hash: state.cart_hash,
+        amount_paise: 6800000,
+    });
+
+    state.consent_id = data.consent_id;
+    btn.innerHTML = '✓ Cart Approved';
+    btn.className = 'btn btn-success';
+
+    showResult('result-consent',
+        `✓ Consent ${data.consent_id.slice(0,8)}...\n  Cart Hash: ${data.cart_hash.slice(0,20)}...\n  Amount: ₹68,000\n  Status: ${data.status}\n  🔒 Bound to exact cart contents (INV-06)`
+    );
+
+    document.getElementById('btn-auth').disabled = false;
+    document.getElementById('btn-auth-deny').disabled = false;
+}
+
+async function userAuthorize(shouldPass) {
+    const data = await api('POST', '/authorize', {
+        principal_user_id: state.user_id,
+        agent_id: state.agent_id,
+        mandate_id: state.mandate_id,
+        consent_id: state.consent_id,
+        cart_hash: state.cart_hash,
+        amount_paise: 6800000,
+        category: 'laptops',
+        merchant_id: state.merchant_id,
+        idempotency_key: 'idem-' + uuid(),
+        authorization_nonce: 'nonce-' + uuid(),
+        consent_cart_hash: state.cart_hash,
+        principal_active: shouldPass,
+    });
+
+    if (shouldPass) state.decision_id = data.decision_id;
+
+    const type = data.allowed ? 'success' : 'error';
+    showResult('result-auth',
+        data.allowed
+            ? `✓ AUTHORIZED — All ${data.rule_count} predicates passed`
+            : `✗ DENIED — Failed at ${data.failed_rule_id}\n  Reason: ${data.failed_reason}\n  Only ${data.rule_count} of 16 predicates evaluated (short-circuit)`,
+        type
+    );
+
+    // Rule trail visualization
+    const trail = document.getElementById('auth-trail');
+    trail.innerHTML = '<div class="rule-trail">' +
+        data.rule_trail.map(r =>
+            `<div class="rule-chip ${r.passed ? 'rule-pass' : 'rule-fail'}">${r.rule_id.replace('AUTH_', '').slice(0,3)} ${r.passed ? '✓' : '✗'}</div>`
+        ).join('') + '</div>';
+
+    if (shouldPass) {
+        document.getElementById('btn-order').disabled = false;
+    }
+}
+
+async function userCreateOrder() {
+    const btn = document.getElementById('btn-order');
+    btn.innerHTML = '<span class="spinner"></span> Creating...';
+    btn.disabled = true;
+
+    const data = await api('POST', '/orders', {
+        user_id: state.user_id,
+        cart_id: uuid(),
+        mandate_id: state.mandate_id,
+        consent_id: state.consent_id,
+        authorization_decision_id: state.decision_id,
+        merchant_id: state.merchant_id,
+        total_paise: 6800000,
+        cart_hash: state.cart_hash,
+        idempotency_key: 'ord-' + uuid(),
+        authorization_nonce: 'nonce-' + uuid(),
+    });
+
+    state.order_id = data.order_id;
+    btn.innerHTML = '✓ Order Created';
+    btn.className = 'btn btn-success';
+
+    showResult('result-order',
+        `✓ Order ${data.order_id.slice(0,8)}...\n  Status: ${data.status}\n  Total: ₹68,000\n  Evidence Chain: ${data.evidence_chain_length} record(s)`
+    );
+
+    document.getElementById('btn-payment').disabled = false;
+}
+
+async function userInitiatePayment() {
+    const btn = document.getElementById('btn-payment');
+    btn.innerHTML = '<span class="spinner"></span> Initiating...';
+    btn.disabled = true;
+
+    const data = await api('POST', `/orders/${state.order_id}/payment`, {
+        amount_paise: 6800000,
+        idempotency_key: 'pay-' + uuid(),
+    });
+
+    btn.innerHTML = '✓ Payment Initiated';
+    btn.className = 'btn btn-success';
+
+    // Dual-state visualization
+    document.getElementById('payment-states').innerHTML = `
+        <div class="dual-state">
+            <div class="state-box local">
+                <div class="state-label">Local State (what we did)</div>
+                <div class="state-value" style="color:var(--warning);">${data.local_state}</div>
+            </div>
+            <div class="state-box provider">
+                <div class="state-label">Provider Confirmed (webhook)</div>
+                <div class="state-value" style="color:var(--text-muted);">${data.provider_confirmed_state || 'null — awaiting webhook'}</div>
+            </div>
+        </div>
+        <div style="margin-top:0.5rem;font-size:0.8rem;color:var(--warning);">
+            ⚠️ is_paid = ${data.is_paid} — Payment is NOT confirmed until Razorpay webhook fires (INV-09)
+        </div>
+    `;
+
+    document.getElementById('btn-proof').disabled = false;
+}
+
+async function userViewProof() {
+    const data = await api('GET', `/orders/${state.order_id}/proof`);
+
+    // Chain visualization
+    const chainVis = document.getElementById('proof-chain');
+    chainVis.innerHTML = '<div class="chain-vis">' +
+        data.records.map((r, i) =>
+            (i > 0 ? '<span class="chain-arrow">→</span>' : '') +
+            `<div class="chain-node">${r.event_type}<br><span style="font-size:0.6rem;color:var(--text-muted);">#${r.record_hash}</span></div>`
+        ).join('') + '</div>';
+
+    showResult('result-proof',
+        `✓ Chain Valid: ${data.valid}\n  Length: ${data.length} records\n  Message: ${data.message}\n\n  Each record's hash links to the previous.\n  Tampering with ANY record breaks the chain.`
+    );
+}
+
+// ── MERCHANT FLOW ──────────────────────────────
+
+async function merchantListTools() {
+    const data = await api('GET', '/mcp/tools?capabilities=manage_catalog,approve_offer');
+    showResult('result-merchant-tools',
+        `✓ Merchant has ${data.total} tools:\n` +
+        data.tools.map(t => `  • ${t.name} (requires: ${t.required_capabilities.join(', ')})`).join('\n')
+    );
+}
+
+async function merchantTestCapability() {
+    const data = await api('POST', '/mcp/tools/request_authorization/invoke', {
+        agent_id: uuid(),
+        agent_capabilities: ['manage_catalog', 'approve_offer'],
+        parameters: {},
+    });
+    showResult('result-merchant-negotiate',
+        `✗ DENIED: Merchant cannot run authorization\n  Capability check: ${data.capability_check_passed}\n  Error: ${data.error}\n\n  Merchants manage catalogs and offers.\n  Only buyer flow triggers authorization.`,
+        'error'
+    );
+}
+
+// ── AI AGENT FLOW ──────────────────────────────
+
+async function agentListTools() {
+    const data = await api('GET', '/mcp/tools?capabilities=search,compare,negotiate,propose_cart,request_authorization,view_proof');
+
+    document.getElementById('agent-tools-grid').innerHTML = '<div class="tools-grid">' +
+        data.tools.map(t =>
+            `<div class="tool-chip"><div class="tool-name">${t.name}</div><div class="tool-cap">${t.required_capabilities.join(', ')}</div></div>`
+        ).join('') + '</div>';
+
+    showResult('result-agent-tools',
+        `✓ Buyer agent has ${data.total} tools.\n  AI can search, compare, negotiate, propose — but CANNOT bypass authorization.`
+    );
+}
+
+async function agentDenyDemo() {
+    const data = await api('POST', '/mcp/tools/request_authorization/invoke', {
+        agent_id: uuid(),
+        agent_capabilities: ['search'],
+        parameters: {},
+    });
+    showResult('result-agent-deny',
+        `✗ ACCESS DENIED\n  Tool: ${data.tool_name}\n  Agent has: [search]\n  Tool needs: [request_authorization]\n  Result: ${data.result_status}\n  Error: ${data.error}\n\n  Core thesis: AI CANNOT bypass capability checks.`,
+        'error'
+    );
+}
+
+async function agentAllowDemo() {
+    const data = await api('POST', '/mcp/tools/search_products/invoke', {
+        agent_id: uuid(),
+        agent_capabilities: ['search'],
+        parameters: { query: 'gaming laptop' },
+    });
+    showResult('result-agent-allow',
+        `✓ ACCESS GRANTED\n  Tool: ${data.tool_name}\n  Capability check: ${data.capability_check_passed}\n  Result: ${data.result_status}\n\n  AI has the 'search' capability → search is allowed.`
+    );
+}
+</script>
+
+</body>
+</html>
