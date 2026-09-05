@@ -16,8 +16,10 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
+
+from apps.api.security import CurrentUser, get_current_user
 
 router = APIRouter(prefix="/mandates", tags=["mandates"])
 
@@ -40,6 +42,8 @@ class CreateMandateRequest(BaseModel):
     def validate_integer(cls, v: int) -> int:
         if not isinstance(v, int):
             raise ValueError("Amount must be integer paise, not float")
+        if v > 100_000_00_00:  # ₹10,00,000 cap
+            raise ValueError("Amount exceeds maximum allowed (₹10,00,000)")
         return v
 
 
@@ -95,7 +99,10 @@ _consents: dict[UUID, dict[str, Any]] = {}
 # ── Endpoints ────────────────────────────────────────
 
 @router.post("", response_model=MandateResponse, status_code=201)
-async def create_mandate(req: CreateMandateRequest) -> MandateResponse:
+async def create_mandate(
+    req: CreateMandateRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> MandateResponse:
     """
     Create a spending mandate that bounds what an AI agent can spend.
 
@@ -104,8 +111,13 @@ async def create_mandate(req: CreateMandateRequest) -> MandateResponse:
     - Allowed categories and merchants
     - Time window (valid_from to valid_until)
 
+    Requires authentication. User can only create mandates for themselves.
+
     Complexity: O(1).
     """
+    # Ownership check — user can only create mandates for themselves
+    if str(req.user_id) != current_user.id:
+        raise HTTPException(status_code=403, detail="Cannot create mandate for another user")
     mandate_id = uuid4()
     now = datetime.now(timezone.utc)
 
@@ -133,11 +145,17 @@ async def create_mandate(req: CreateMandateRequest) -> MandateResponse:
 
 
 @router.get("/{mandate_id}", response_model=MandateResponse)
-async def get_mandate(mandate_id: UUID) -> MandateResponse:
-    """Get mandate details. O(1) lookup."""
+async def get_mandate(
+    mandate_id: UUID,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> MandateResponse:
+    """Get mandate details. O(1) lookup. Requires authentication."""
     mandate = _mandates.get(mandate_id)
     if not mandate:
         raise HTTPException(status_code=404, detail="Mandate not found")
+    # Ownership check
+    if str(mandate["user_id"]) != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
     return MandateResponse(
         **mandate,
         remaining_paise=mandate["max_amount_paise"] - mandate["used_amount_paise"],
@@ -145,7 +163,11 @@ async def get_mandate(mandate_id: UUID) -> MandateResponse:
 
 
 @router.post("/{mandate_id}/consent", response_model=ConsentResponse, status_code=201)
-async def create_consent(mandate_id: UUID, req: CreateConsentRequest) -> ConsentResponse:
+async def create_consent(
+    mandate_id: UUID,
+    req: CreateConsentRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> ConsentResponse:
     """
     Request user consent for a specific cart under a mandate.
 
