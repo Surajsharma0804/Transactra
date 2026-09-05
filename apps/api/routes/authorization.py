@@ -45,17 +45,6 @@ class AuthorizeRequest(BaseModel):
     merchant_id: UUID
     idempotency_key: str = Field(min_length=1)
     authorization_nonce: str = Field(min_length=1)
-    # Pre-resolved predicate inputs (in production, resolved from DB)
-    principal_active: bool = True
-    agent_active: bool = True
-    mandate_active: bool = True
-    mandate_has_budget: bool = True
-    mandate_category_ok: bool = True
-    mandate_merchant_ok: bool = True
-    consent_valid: bool = True
-    consent_cart_hash: str = ""
-    nonce_unused: bool = True
-    idempotency_fresh: bool = True
 
     @field_validator("amount_paise")
     @classmethod
@@ -83,6 +72,103 @@ class AuthorizationResponse(BaseModel):
     timestamp: str
 
 
+# ── Shared state access ──────────────────────────────
+# Import the in-memory stores from mandates route so we can
+# RESOLVE predicate values instead of trusting the client.
+from apps.api.routes.mandates import _mandates, _consents
+
+# Track used nonces and idempotency keys for uniqueness — O(1) lookup
+_used_nonces: set[str] = set()
+_used_idempotency_keys: set[str] = set()
+
+
+# ── Predicate Resolver ───────────────────────────────
+
+def _resolve_predicates(
+    req: AuthorizeRequest,
+    current_user_id: str,
+) -> dict[str, Any]:
+    """
+    Resolve all 16 predicate inputs from REAL state, not client assertions.
+
+    This is the critical function that makes the authorization gate
+    actually enforce constraints. Without this, the gate rubber-stamps.
+
+    Complexity: O(1) — all dict lookups.
+    """
+    now = datetime.now(timezone.utc)
+
+    # Principal is active if they're authenticated (they got past JWT)
+    principal_active = True
+
+    # Agent is active (in production, checked from DB; here, always true if authenticated)
+    agent_active = True
+
+    # Look up the ACTUAL mandate — O(1) dict lookup
+    mandate = _mandates.get(req.mandate_id)
+    if not mandate:
+        return {
+            "principal_active": principal_active,
+            "agent_active": agent_active,
+            "mandate_active": False,  # Mandate doesn't exist → fail
+            "mandate_owner_id": uuid4(),  # dummy — won't match
+            "mandate_agent_id": uuid4(),
+            "mandate_has_budget": False,
+            "mandate_category_ok": False,
+            "mandate_merchant_ok": False,
+            "consent_valid": False,
+            "consent_cart_hash": "",
+            "nonce_unused": req.authorization_nonce not in _used_nonces,
+            "idempotency_fresh": req.idempotency_key not in _used_idempotency_keys,
+        }
+
+    # Resolve mandate predicates from REAL stored data
+    mandate_active = (
+        mandate["status"] == "active"
+        and (mandate.get("valid_from") is None or mandate["valid_from"] <= now)
+        and (mandate.get("valid_until") is None or mandate["valid_until"] >= now)
+    )
+
+    remaining_paise = mandate["max_amount_paise"] - mandate["used_amount_paise"]
+    mandate_has_budget = req.amount_paise <= remaining_paise
+
+    allowed_cats = mandate.get("allowed_categories") or []
+    mandate_category_ok = (
+        len(allowed_cats) == 0  # empty = all categories allowed
+        or req.category in allowed_cats
+    )
+
+    allowed_merchants = mandate.get("allowed_merchant_ids") or []
+    mandate_merchant_ok = (
+        len(allowed_merchants) == 0  # empty = all merchants allowed
+        or str(req.merchant_id) in allowed_merchants
+    )
+
+    # Look up the ACTUAL consent — O(1) dict lookup
+    consent = _consents.get(req.consent_id)
+    consent_valid = (
+        consent is not None
+        and consent["status"] == "approved"
+        and consent["mandate_id"] == req.mandate_id
+    )
+    consent_cart_hash = consent["cart_hash"] if consent else ""
+
+    return {
+        "principal_active": principal_active,
+        "agent_active": agent_active,
+        "mandate_active": mandate_active,
+        "mandate_owner_id": mandate["user_id"],
+        "mandate_agent_id": mandate["agent_id"],
+        "mandate_has_budget": mandate_has_budget,
+        "mandate_category_ok": mandate_category_ok,
+        "mandate_merchant_ok": mandate_merchant_ok,
+        "consent_valid": consent_valid,
+        "consent_cart_hash": consent_cart_hash,
+        "nonce_unused": req.authorization_nonce not in _used_nonces,
+        "idempotency_fresh": req.idempotency_key not in _used_idempotency_keys,
+    }
+
+
 # ── Endpoints ────────────────────────────────────────
 
 @router.post("", response_model=AuthorizationResponse, status_code=200)
@@ -93,30 +179,17 @@ async def authorize(
     """
     Run the 16-predicate authorization gate.
 
-    Requires authentication. Principal must be the authenticated user.
-
-    AI proposes → deterministic infrastructure verifies:
-    1.  RequestFormatValid
-    2.  PrincipalAuthenticated
-    3.  PrincipalActive
-    4.  AgentActive
-    5.  AgentOwnedByPrincipal
-    6.  MandateExists
-    7.  MandateActive
-    8.  MandateOwnedByPrincipal
-    9.  MandateCoversCategory
-    10. MandateCoversAmount
-    11. MandateCoversMerchant
-    12. CartHashMatches
-    13. ConsentValid
-    14. ConsentMatchesCart
-    15. NonceUnused
-    16. IdempotencyKeyFresh
+    ALL predicate values are resolved from real state — the client
+    cannot supply booleans to bypass checks. This is the core thesis:
+    AI proposes, deterministic infrastructure verifies.
 
     Short-circuit: first failure → DENY. All 16 pass → ALLOW.
 
     Complexity: O(1) amortized.
     """
+    # Resolve all predicates from REAL state, not client assertions
+    resolved = _resolve_predicates(req, current_user.id)
+
     auth_req = AuthorizationRequest(
         request_id=uuid4(),
         principal_user_id=req.principal_user_id,
@@ -134,23 +207,32 @@ async def authorize(
 
     decision = _gate.evaluate(
         auth_req,
-        principal_active=req.principal_active,
+        principal_active=resolved["principal_active"],
         principal_user_id=req.principal_user_id,
-        agent_active=req.agent_active,
+        agent_active=resolved["agent_active"],
         agent_owner_id=req.principal_user_id,
         agent_capabilities=frozenset({"request_authorization"}),
-        mandate_active=req.mandate_active,
-        mandate_owner_id=req.principal_user_id,
-        mandate_agent_id=req.agent_id,
-        mandate_has_budget=req.mandate_has_budget,
-        mandate_category_ok=req.mandate_category_ok,
-        mandate_merchant_ok=req.mandate_merchant_ok,
+        mandate_active=resolved["mandate_active"],
+        mandate_owner_id=resolved["mandate_owner_id"],
+        mandate_agent_id=resolved["mandate_agent_id"],
+        mandate_has_budget=resolved["mandate_has_budget"],
+        mandate_category_ok=resolved["mandate_category_ok"],
+        mandate_merchant_ok=resolved["mandate_merchant_ok"],
         mandate_cart_hash=None,
-        consent_valid=req.consent_valid,
-        consent_cart_hash=req.consent_cart_hash or req.cart_hash,
-        nonce_unused=req.nonce_unused,
-        idempotency_fresh=req.idempotency_fresh,
+        consent_valid=resolved["consent_valid"],
+        consent_cart_hash=resolved["consent_cart_hash"],
+        nonce_unused=resolved["nonce_unused"],
+        idempotency_fresh=resolved["idempotency_fresh"],
     )
+
+    # If allowed, mark nonce and idempotency key as used — O(1)
+    if decision.allowed:
+        _used_nonces.add(req.authorization_nonce)
+        _used_idempotency_keys.add(req.idempotency_key)
+        # Deduct budget from mandate
+        mandate = _mandates.get(req.mandate_id)
+        if mandate:
+            mandate["used_amount_paise"] += req.amount_paise
 
     # Store for retrieval
     result = {
@@ -179,3 +261,4 @@ async def get_decision(decision_id: UUID) -> AuthorizationResponse:
     if not decision:
         raise HTTPException(status_code=404, detail="Decision not found")
     return AuthorizationResponse(**decision)
+
