@@ -239,6 +239,22 @@ async def root() -> dict[str, str]:
     }
 
 
+@app.get("/config/razorpay", tags=["system"])
+async def razorpay_config() -> dict[str, Any]:
+    """
+    Return Razorpay publishable key for frontend checkout.
+
+    Only returns key_id (public) — NEVER exposes key_secret.
+    The frontend needs this to load the Razorpay checkout form.
+
+    O(1).
+    """
+    return {
+        "key_id": settings.razorpay_key_id or "",
+        "configured": bool(settings.razorpay_key_id),
+    }
+
+
 # ── Global Exception Handler ────────────────────────
 
 @app.exception_handler(Exception)
