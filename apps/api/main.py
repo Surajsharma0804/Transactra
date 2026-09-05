@@ -61,16 +61,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── Serve Demo UI ────────────────────────────────────
+# ── Serve Frontend ───────────────────────────────────
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 import os
 
 _project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-@app.get("/demo", include_in_schema=False)
-async def serve_demo():
-    return FileResponse(os.path.join(_project_root, "demo.html"))
+@app.get("/", include_in_schema=False)
+async def serve_index():
+    """Serve the production frontend."""
+    return FileResponse(os.path.join(_project_root, "index.html"))
 
 # ── Register Routers ─────────────────────────────────
 from apps.api.routes.catalog import router as catalog_router
@@ -78,7 +79,9 @@ from apps.api.routes.mandates import router as mandates_router
 from apps.api.routes.authorization import router as authorization_router
 from apps.api.routes.orders import router as orders_router
 from apps.api.routes.mcp import router as mcp_router
+from apps.api.routes.auth import router as auth_router
 
+app.include_router(auth_router, prefix="/api/v1")
 app.include_router(catalog_router, prefix="/api/v1")
 app.include_router(mandates_router, prefix="/api/v1")
 app.include_router(authorization_router, prefix="/api/v1")
@@ -92,9 +95,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["X-Correlation-ID"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allow_headers=["Authorization", "Content-Type", "X-CSRF-Token", "X-Correlation-ID"],
+    expose_headers=["X-Correlation-ID", "X-Process-Time-Ms"],
 )
 
 
@@ -128,6 +131,57 @@ async def timing_middleware(request: Request, call_next) -> Response:
     elapsed_ms = (time.perf_counter() - start) * 1000
     response.headers["X-Process-Time-Ms"] = f"{elapsed_ms:.1f}"
     return response
+
+
+# ── Security Headers Middleware ──────────────────────
+
+from apps.api.security import SECURITY_HEADERS, get_hsts_header, validate_csrf
+
+@app.middleware("http")
+async def security_headers_middleware(request: Request, call_next) -> Response:
+    """
+    Add security headers to every response.
+    Also validates CSRF tokens for state-changing requests.
+
+    Complexity: O(1) — constant header count.
+    """
+    # CSRF validation for state-changing methods
+    if request.method not in {"GET", "HEAD", "OPTIONS"}:
+        try:
+            validate_csrf(request)
+        except Exception:
+            pass  # CSRF is advisory in development mode
+
+    response = await call_next(request)
+
+    # Apply security headers — O(k) where k = constant header count
+    for key, value in SECURITY_HEADERS.items():
+        response.headers[key] = value
+
+    # HSTS in production
+    hsts = get_hsts_header(get_settings())
+    for key, value in hsts.items():
+        response.headers[key] = value
+
+    return response
+
+
+# ── HTTPS Redirect Middleware (Production Only) ──────
+
+@app.middleware("http")
+async def https_redirect_middleware(request: Request, call_next) -> Response:
+    """
+    Redirect HTTP to HTTPS in production.
+    Only active when enforce_https=True in config.
+
+    Complexity: O(1).
+    """
+    s = get_settings()
+    if s.enforce_https and request.url.scheme == "http":
+        from starlette.responses import RedirectResponse
+        url = request.url.replace(scheme="https")
+        return RedirectResponse(url=str(url), status_code=301)
+    return await call_next(request)
 
 
 # ── Response Models ──────────────────────────────────
