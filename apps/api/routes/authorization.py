@@ -14,8 +14,10 @@ from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID, uuid4
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
+
+from apps.api.security import CurrentUser, get_current_user
 
 from backend.kernel.authorization.gate import (
     AuthorizationGate,
@@ -84,9 +86,14 @@ class AuthorizationResponse(BaseModel):
 # ── Endpoints ────────────────────────────────────────
 
 @router.post("", response_model=AuthorizationResponse, status_code=200)
-async def authorize(req: AuthorizeRequest) -> AuthorizationResponse:
+async def authorize(
+    req: AuthorizeRequest,
+    current_user: CurrentUser = Depends(get_current_user),
+) -> AuthorizationResponse:
     """
     Run the 16-predicate authorization gate.
+
+    Requires authentication. Principal must be the authenticated user.
 
     AI proposes → deterministic infrastructure verifies:
     1.  RequestFormatValid
