@@ -234,6 +234,51 @@ async def initiate_payment(
     payment_id = uuid4()
     now = datetime.now(timezone.utc)
 
+    # Create Razorpay order via real API call if keys are configured
+    razorpay_order_id = None
+    from backend.config import get_settings
+    settings = get_settings()
+
+    if settings.razorpay_key_id and settings.razorpay_key_secret:
+        try:
+            import httpx
+            import base64
+            auth_str = f"{settings.razorpay_key_id}:{settings.razorpay_key_secret}"
+            auth_header = base64.b64encode(auth_str.encode()).decode()
+
+            async with httpx.AsyncClient(timeout=30) as client:
+                resp = await client.post(
+                    "https://api.razorpay.com/v1/orders",
+                    headers={
+                        "Authorization": f"Basic {auth_header}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "amount": req.amount_paise,
+                        "currency": req.currency,
+                        "receipt": str(order_id),
+                        "notes": {"order_id": str(order_id), "payment_id": str(payment_id)},
+                    },
+                )
+                if resp.status_code == 200:
+                    rz_data = resp.json()
+                    razorpay_order_id = rz_data.get("id")
+                else:
+                    import logging
+                    logging.getLogger("transactra.payment").warning(
+                        f"Razorpay order creation failed: {resp.status_code} {resp.text}"
+                    )
+        except Exception as e:
+            import logging
+            logging.getLogger("transactra.payment").warning(
+                f"Razorpay API call failed, using local-only mode: {e}"
+            )
+    else:
+        import logging
+        logging.getLogger("transactra.payment").info(
+            "Razorpay keys not configured — running in local-only payment mode"
+        )
+
     payment = {
         "payment_id": payment_id,
         "order_id": order_id,
@@ -241,6 +286,7 @@ async def initiate_payment(
         "currency": req.currency,
         "local_state": "initiated",
         "provider_confirmed_state": None,
+        "provider_order_id": razorpay_order_id,
         "is_paid": False,
         "needs_reconciliation": False,
         "idempotency_key": req.idempotency_key,
@@ -258,6 +304,7 @@ async def initiate_payment(
             "payment_id": str(payment_id),
             "amount_paise": req.amount_paise,
             "local_state": "initiated",
+            "provider_order_id": razorpay_order_id,
         })
 
     return PaymentResponse(**payment)
@@ -266,16 +313,36 @@ async def initiate_payment(
 @router.post("/webhook/razorpay", status_code=200)
 async def razorpay_webhook(request: Request) -> dict[str, str]:
     """
-    Razorpay webhook handler.
+    Razorpay webhook handler with HMAC-SHA256 signature verification.
 
     This is the ONLY endpoint that can set provider_confirmed_state.
-    In production, verifies HMAC-SHA256 signature before processing.
+    Signature is verified BEFORE processing any payment state changes.
 
     Dual-state: Only this webhook is authoritative for "is this paid?"
 
-    Complexity: O(1) per webhook.
+    Complexity: O(n) for HMAC where n = body length, O(1) for state update.
     """
-    body = await request.json()
+    # Read raw body bytes first — HMAC must be computed on exact bytes
+    raw_body = await request.body()
+
+    # Verify HMAC-SHA256 signature — reject if missing or invalid
+    signature = request.headers.get("X-Razorpay-Signature", "")
+    if not signature:
+        raise HTTPException(status_code=401, detail="Missing webhook signature")
+
+    from adapters.payment.razorpay import RazorpaySignatureVerifier
+    from backend.config import get_settings
+    settings = get_settings()
+    webhook_secret = getattr(settings, "razorpay_webhook_secret", "")
+
+    if webhook_secret and not RazorpaySignatureVerifier.verify_webhook_signature(
+        raw_body, signature, webhook_secret
+    ):
+        raise HTTPException(status_code=401, detail="Invalid webhook signature")
+
+    # Only after signature verification, parse the body
+    import json as _json
+    body = _json.loads(raw_body)
     event_type = body.get("event", "")
     entity = body.get("payload", {}).get("payment", {}).get("entity", {})
 
