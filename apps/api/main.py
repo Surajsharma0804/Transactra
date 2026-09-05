@@ -39,9 +39,15 @@ async def lifespan(app: FastAPI):
         "Transactra API starting",
         extra={"env": settings.app_env, "version": settings.app_version},
     )
-    engine = get_engine()
+    engine = None
+    try:
+        engine = get_engine()
+        logger.info("Database engine connected")
+    except Exception:
+        logger.warning("Database not available — running in demo mode (in-memory stores)")
     yield
-    await engine.dispose()
+    if engine:
+        await engine.dispose()
     logger.info("Transactra API shutdown complete")
 
 
