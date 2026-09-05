@@ -1,8 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ShoppingBag, Clock, CheckCircle } from 'lucide-react';
-import { formatPaise, formatRelativeTime, getStatusColor, cn } from '@/lib/utils';
+import { ShoppingBag, CheckCircle, Clock } from 'lucide-react';
+import { formatPaise, formatRelativeTime, getStatusColor } from '@/lib/utils';
 
 const orders = [
   { id: 'ORD-A1B2', buyer: 'Rahul Sharma', total_paise: 150000, status: 'paid', items: 2, created_at: new Date(Date.now() - 3600000).toISOString() },
@@ -13,47 +12,34 @@ const orders = [
 
 export default function MerchantOrdersPage() {
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-4xl space-y-5">
       <div>
-        <h1 className="text-3xl font-bold text-white">Incoming Orders</h1>
-        <p className="text-gray-400 mt-1">Track and fulfill customer orders</p>
+        <h1 className="text-xl font-semibold text-white">Orders</h1>
+        <p className="text-sm text-zinc-500 mt-0.5">Incoming customer orders</p>
       </div>
 
-      <div className="space-y-3">
-        {orders.map((order, idx) => (
-          <motion.div
-            key={order.id}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.08 }}
-            className="glass-card p-5 flex items-center justify-between"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5 text-purple-400" />
-              </div>
+      <div className="space-y-2">
+        {orders.map(o => (
+          <div key={o.id} className="flex items-center justify-between p-3.5 border border-zinc-800 rounded-lg bg-zinc-900">
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="w-4 h-4 text-zinc-500" />
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-white font-semibold text-sm">{order.id}</span>
-                  <span className={cn('text-xs px-2 py-0.5 rounded-md font-medium', getStatusColor(order.status))}>
-                    {order.status.replace('_', ' ')}
-                  </span>
+                  <span className="text-sm font-medium text-white">{o.id}</span>
+                  <span className={`text-xs px-1.5 py-0.5 rounded ${getStatusColor(o.status)}`}>{o.status.replace('_', ' ')}</span>
                 </div>
-                <p className="text-gray-500 text-xs mt-1">
-                  {order.buyer} · {order.items} item{order.items !== 1 ? 's' : ''} · {formatRelativeTime(order.created_at)}
-                </p>
+                <p className="text-xs text-zinc-600 mt-0.5">{o.buyer} · {o.items} item{o.items !== 1 ? 's' : ''} · {formatRelativeTime(o.created_at)}</p>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-white font-semibold">{formatPaise(order.total_paise)}</p>
-              {order.status === 'paid' && (
-                <button className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 mt-1 ml-auto">
-                  <CheckCircle className="w-3 h-3" />
-                  Mark Fulfilled
+              <p className="text-sm font-medium text-white">{formatPaise(o.total_paise)}</p>
+              {o.status === 'paid' && (
+                <button className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center gap-1 mt-0.5 ml-auto">
+                  <CheckCircle className="w-3 h-3" /> Fulfill
                 </button>
               )}
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>

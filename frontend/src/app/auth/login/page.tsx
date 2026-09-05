@@ -1,13 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, Mail, Lock, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/lib/store';
 import { authApi } from '@/lib/api';
-import { cn } from '@/lib/utils';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,10 +33,10 @@ export default function LoginPage() {
       let response;
       if (isRegister) {
         response = await authApi.register(email, password, name, role || 'buyer');
-        toast.success('Account created successfully!');
+        toast.success('Account created');
       } else {
         response = await authApi.login(email, password);
-        toast.success(`Welcome back, ${response.user.name}!`);
+        toast.success(`Welcome back, ${response.user.name}`);
       }
       setAuth(response.user, response.access_token);
       router.push(`/${response.user.role}`);
@@ -50,174 +48,110 @@ export default function LoginPage() {
   };
 
   const roleLabel = role === 'merchant' ? 'Merchant' : 'Buyer';
-  const roleColor = role === 'merchant' ? 'purple' : 'blue';
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center px-4 gradient-mesh">
-      {/* Background effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className={`absolute -top-40 -right-40 w-96 h-96 rounded-full ${
-            role === 'merchant' ? 'bg-purple-500/10' : 'bg-blue-500/10'
-          } blur-[120px]`}
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 8, repeat: Infinity }}
-        />
-      </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative z-10 w-full max-w-md"
-      >
-        {/* Back Button */}
-        <motion.button
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+        {/* Back */}
+        <button
           onClick={() => { setRole(null); router.push('/'); }}
-          className="flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition-colors"
-          whileHover={{ x: -4 }}
+          className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-300 mb-8 text-sm transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">Choose Different Role</span>
-        </motion.button>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back
+        </button>
 
-        {/* Login Card */}
-        <div className="glass-card p-8">
+        {/* Card */}
+        <div className="border border-zinc-800 rounded-lg bg-zinc-900 p-6">
           {/* Header */}
-          <div className="text-center mb-8">
-            <motion.div
-              className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 ${
-                role === 'merchant'
-                  ? 'bg-purple-500/10 glow-purple'
-                  : 'bg-blue-500/10 glow-blue'
-              }`}
-              initial={{ scale: 0.5, rotate: -10 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-            >
-              <ShieldCheck className={`w-8 h-8 ${
-                role === 'merchant' ? 'text-purple-400' : 'text-blue-400'
-              }`} />
-            </motion.div>
-            <h1 className="text-2xl font-bold text-white mb-1">
-              {isRegister ? 'Create Account' : 'Welcome Back'}
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <ShieldCheck className="w-5 h-5 text-blue-500" />
+              <span className="text-sm font-medium text-zinc-400">{roleLabel} Account</span>
+            </div>
+            <h1 className="text-xl font-semibold text-white">
+              {isRegister ? 'Create your account' : 'Sign in to Transactra'}
             </h1>
-            <p className="text-gray-400 text-sm">
-              {isRegister ? 'Register' : 'Sign in'} as{' '}
-              <span className={cn(
-                'font-semibold',
-                role === 'merchant' ? 'text-purple-400' : 'text-blue-400'
-              )}>
-                {roleLabel}
-              </span>
-            </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {isRegister && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                transition={{ duration: 0.3 }}
-              >
-                <label className="block text-sm text-gray-400 mb-1.5">Full Name</label>
+              <div>
+                <label htmlFor="name" className="block text-sm text-zinc-400 mb-1.5">Name</label>
                 <input
+                  id="name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                  placeholder="Your full name"
+                  className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                  placeholder="Enter your full name"
                 />
-              </motion.div>
+              </div>
             )}
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                  placeholder="you@example.com"
-                  autoComplete="email"
-                />
-              </div>
+              <label htmlFor="email" className="block text-sm text-zinc-400 mb-1.5">Email</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                placeholder="Enter your email"
+                autoComplete="email"
+              />
             </div>
 
             <div>
-              <label className="block text-sm text-gray-400 mb-1.5">Password</label>
+              <label htmlFor="password" className="block text-sm text-zinc-400 mb-1.5">Password</label>
               <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                 <input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-11 pr-12 py-3 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all"
-                  placeholder="••••••••"
+                  className="w-full px-3 py-2 pr-9 rounded-md bg-zinc-950 border border-zinc-800 text-white text-sm placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                  placeholder="Enter your password"
                   autoComplete={isRegister ? 'new-password' : 'current-password'}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-600 hover:text-zinc-400 transition-colors"
+                  tabIndex={-1}
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
 
-            <motion.button
+            <button
               type="submit"
               disabled={loading}
-              className={cn(
-                'w-full py-3.5 rounded-xl font-semibold text-white transition-all',
-                'disabled:opacity-50 disabled:cursor-not-allowed',
-                role === 'merchant'
-                  ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 glow-purple'
-                  : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 glow-blue'
-              )}
-              whileHover={{ scale: loading ? 1 : 1.01 }}
-              whileTap={{ scale: loading ? 1 : 0.99 }}
+              className="w-full py-2 rounded-md bg-white text-zinc-900 text-sm font-medium hover:bg-zinc-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <motion.span
-                    className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full"
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 0.8, repeat: Infinity, ease: 'linear' }}
-                  />
-                  {isRegister ? 'Creating Account...' : 'Signing In...'}
-                </span>
-              ) : (
-                isRegister ? 'Create Account' : 'Sign In'
-              )}
-            </motion.button>
+              {loading
+                ? (isRegister ? 'Creating account...' : 'Signing in...')
+                : (isRegister ? 'Create account' : 'Sign in')
+              }
+            </button>
           </form>
 
-          {/* Toggle Register/Login */}
-          <div className="mt-6 text-center">
+          {/* Toggle */}
+          <div className="mt-4 text-center">
             <button
               onClick={() => setIsRegister(!isRegister)}
-              className="text-sm text-gray-400 hover:text-white transition-colors"
+              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
             >
-              {isRegister ? (
-                <>Already have an account? <span className="text-blue-400">Sign in</span></>
-              ) : (
-                <>Don&apos;t have an account? <span className="text-blue-400">Register</span></>
-              )}
+              {isRegister
+                ? 'Already have an account? Sign in'
+                : "Don't have an account? Create one"
+              }
             </button>
           </div>
         </div>
-
-        {/* Security badge */}
-        <div className="mt-6 text-center text-xs text-gray-600 flex items-center justify-center gap-2">
-          <Lock className="w-3 h-3" />
-          <span>Secured with JWT + CSRF double-submit cookies</span>
-        </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
