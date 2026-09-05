@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiry_minutes: int = 60
     mandate_signing_secret: str = ""
+    csrf_secret: str = "dev-csrf-secret-change-in-production"
+    session_cookie_name: str = "transactra_session"
+    enforce_https: bool = False  # Set True in production
 
     # ── Operational ──────────────────────────────────
     reconciliation_interval_seconds: int = 300
