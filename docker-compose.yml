@@ -1,0 +1,67 @@
+services:
+  # ── FastAPI Backend ────────────────────────────────
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://transactra:transactra@db:5432/transactra
+      - DATABASE_URL_SYNC=postgresql+psycopg://transactra:transactra@db:5432/transactra
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: uvicorn apps.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # ── Background Worker ──────────────────────────────
+  worker:
+    build: .
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://transactra:transactra@db:5432/transactra
+      - DATABASE_URL_SYNC=postgresql+psycopg://transactra:transactra@db:5432/transactra
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    command: python apps/worker/main.py
+
+  # ── PostgreSQL 16 + pgvector ───────────────────────
+  db:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: transactra
+      POSTGRES_PASSWORD: transactra
+      POSTGRES_DB: transactra
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U transactra"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis 7 ────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
