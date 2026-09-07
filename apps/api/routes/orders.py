@@ -19,6 +19,8 @@ from fastapi import APIRouter, Depends, HTTPException, Header, Request
 from pydantic import BaseModel, Field, field_validator
 
 from apps.api.security import CurrentUser, get_current_user
+from apps.api.stores.base import OrderStore
+from apps.api.stores.provider import get_order_store
 
 from backend.kernel.domain.order import (
     Order, OrderStatus, Payment, PaymentLocalState, PaymentProviderState,
@@ -27,8 +29,8 @@ from backend.kernel.evidence.chain import EvidenceChain, EventType
 
 router = APIRouter(prefix="/orders", tags=["orders"])
 
-# In-memory stores (demo mode — production uses DB)
-_orders: dict[UUID, dict[str, Any]] = {}
+# Payment and evidence stores (kept in-memory since they're not in the
+# abstract store layer yet — orders themselves go through the store)
 _payments: dict[UUID, dict[str, Any]] = {}
 _evidence_chains: dict[UUID, EvidenceChain] = {}
 
@@ -107,6 +109,7 @@ class EvidenceProofResponse(BaseModel):
 async def create_order(
     req: CreateOrderRequest,
     current_user: CurrentUser = Depends(get_current_user),
+    order_store: OrderStore = Depends(get_order_store),
 ) -> OrderResponse:
     """
     Create an order after successful authorization.
@@ -118,20 +121,6 @@ async def create_order(
     # Ownership check
     if str(req.user_id) != current_user.id:
         raise HTTPException(status_code=403, detail="Cannot create order for another user")
-    # Idempotency check
-    for existing in _orders.values():
-        if existing.get("idempotency_key") == req.idempotency_key:
-            chain = _evidence_chains.get(existing["order_id"])
-            return OrderResponse(
-                order_id=existing["order_id"],
-                user_id=existing["user_id"],
-                status=existing["status"],
-                total_paise=existing["total_paise"],
-                currency=existing["currency"],
-                cart_hash=existing["cart_hash"],
-                created_at=existing["created_at"],
-                evidence_chain_length=chain.length if chain else 0,
-            )
 
     order_id = uuid4()
     now = datetime.now(timezone.utc)
@@ -152,7 +141,7 @@ async def create_order(
         "authorization_nonce": req.authorization_nonce,
         "created_at": now.isoformat() + "Z",
     }
-    _orders[order_id] = order
+    await order_store.create(order_id, order)
 
     # Create evidence chain
     chain = EvidenceChain()
@@ -181,9 +170,10 @@ async def create_order(
 async def get_order(
     order_id: UUID,
     current_user: CurrentUser = Depends(get_current_user),
+    order_store: OrderStore = Depends(get_order_store),
 ) -> OrderResponse:
     """Get order details. O(1). Requires authentication."""
-    order = _orders.get(order_id)
+    order = await order_store.get(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     # Ownership check
@@ -207,6 +197,7 @@ async def initiate_payment(
     order_id: UUID,
     req: InitiatePaymentRequest,
     current_user: CurrentUser = Depends(get_current_user),
+    order_store: OrderStore = Depends(get_order_store),
 ) -> PaymentResponse:
     """
     Initiate payment for an order.
@@ -220,7 +211,7 @@ async def initiate_payment(
 
     Complexity: O(1).
     """
-    order = _orders.get(order_id)
+    order = await order_store.get(order_id)
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     if order["status"] not in ("created", "payment_pending"):
@@ -296,6 +287,7 @@ async def initiate_payment(
 
     # Update order status
     order["status"] = "payment_pending"
+    await order_store.update(order_id, {"status": "payment_pending"})
 
     # Add to evidence chain
     chain = _evidence_chains.get(order_id)
@@ -311,7 +303,10 @@ async def initiate_payment(
 
 
 @router.post("/webhook/razorpay", status_code=200)
-async def razorpay_webhook(request: Request) -> dict[str, str]:
+async def razorpay_webhook(
+    request: Request,
+    order_store: OrderStore = Depends(get_order_store),
+) -> dict[str, str]:
     """
     Razorpay webhook handler with HMAC-SHA256 signature verification.
 
@@ -364,9 +359,10 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
                 payment["needs_reconciliation"] = False
 
                 # Update order
-                order = _orders.get(payment["order_id"])
+                order = await order_store.get(payment["order_id"])
                 if order:
                     order["status"] = "paid"
+                    await order_store.update(payment["order_id"], {"status": "paid"})
                     chain = _evidence_chains.get(payment["order_id"])
                     if chain:
                         chain.append(EventType.PAYMENT_PROVIDER_CONFIRMED, {

@@ -18,6 +18,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
 from apps.api.security import CurrentUser, get_current_user
+from apps.api.stores.base import MandateStore, ConsentStore, UserStore, AgentStore
+from apps.api.stores.provider import (
+    get_mandate_store,
+    get_consent_store,
+    get_user_store,
+    get_agent_store,
+)
 
 from backend.kernel.authorization.gate import (
     AuthorizationGate,
@@ -72,11 +79,6 @@ class AuthorizationResponse(BaseModel):
     timestamp: str
 
 
-# ── Shared state access ──────────────────────────────
-# Import the in-memory stores from mandates route so we can
-# RESOLVE predicate values instead of trusting the client.
-from apps.api.routes.mandates import _mandates, _consents
-
 # Track used nonces and idempotency keys for uniqueness — O(1) lookup
 _used_nonces: set[str] = set()
 _used_idempotency_keys: set[str] = set()
@@ -84,9 +86,13 @@ _used_idempotency_keys: set[str] = set()
 
 # ── Predicate Resolver ───────────────────────────────
 
-def _resolve_predicates(
+async def _resolve_predicates(
     req: AuthorizeRequest,
     current_user_id: str,
+    mandate_store: MandateStore,
+    consent_store: ConsentStore,
+    user_store: UserStore,
+    agent_store: AgentStore,
 ) -> dict[str, Any]:
     """
     Resolve all 16 predicate inputs from REAL state, not client assertions.
@@ -94,18 +100,38 @@ def _resolve_predicates(
     This is the critical function that makes the authorization gate
     actually enforce constraints. Without this, the gate rubber-stamps.
 
-    Complexity: O(1) — all dict lookups.
+    Now resolves principal_active and agent_active from real store lookups
+    instead of hardcoding True.
+
+    Complexity: O(1) — all store lookups.
     """
     now = datetime.now(timezone.utc)
 
-    # Principal is active if they're authenticated (they got past JWT)
-    principal_active = True
+    # Resolve principal_active from real user status
+    user = await user_store.get(current_user_id)
+    principal_active = (
+        user is not None
+        and user.get("status", "active") == "active"
+    )
 
-    # Agent is active (in production, checked from DB; here, always true if authenticated)
-    agent_active = True
+    # Resolve agent_active from real agent status + expiry
+    # If agent is not registered in the store (demo mode), default to active.
+    # Only explicitly revoked/suspended/expired agents fail this predicate.
+    agent = await agent_store.get(req.agent_id)
+    if agent is None:
+        # Agent not in store — treat as active (demo mode compatibility)
+        agent_active = True
+    else:
+        agent_active = (
+            agent.get("status", "active") == "active"
+            and (
+                agent.get("expires_at") is None
+                or agent["expires_at"] > now
+            )
+        )
 
-    # Look up the ACTUAL mandate — O(1) dict lookup
-    mandate = _mandates.get(req.mandate_id)
+    # Look up the ACTUAL mandate — O(1) store lookup
+    mandate = await mandate_store.get(req.mandate_id)
     if not mandate:
         return {
             "principal_active": principal_active,
@@ -144,8 +170,8 @@ def _resolve_predicates(
         or str(req.merchant_id) in allowed_merchants
     )
 
-    # Look up the ACTUAL consent — O(1) dict lookup
-    consent = _consents.get(req.consent_id)
+    # Look up the ACTUAL consent — O(1) store lookup
+    consent = await consent_store.get(req.consent_id)
     consent_valid = (
         consent is not None
         and consent["status"] == "approved"
@@ -175,6 +201,10 @@ def _resolve_predicates(
 async def authorize(
     req: AuthorizeRequest,
     current_user: CurrentUser = Depends(get_current_user),
+    mandate_store: MandateStore = Depends(get_mandate_store),
+    consent_store: ConsentStore = Depends(get_consent_store),
+    user_store: UserStore = Depends(get_user_store),
+    agent_store: AgentStore = Depends(get_agent_store),
 ) -> AuthorizationResponse:
     """
     Run the 16-predicate authorization gate.
@@ -188,7 +218,10 @@ async def authorize(
     Complexity: O(1) amortized.
     """
     # Resolve all predicates from REAL state, not client assertions
-    resolved = _resolve_predicates(req, current_user.id)
+    resolved = await _resolve_predicates(
+        req, current_user.id,
+        mandate_store, consent_store, user_store, agent_store,
+    )
 
     auth_req = AuthorizationRequest(
         request_id=uuid4(),
@@ -230,9 +263,10 @@ async def authorize(
         _used_nonces.add(req.authorization_nonce)
         _used_idempotency_keys.add(req.idempotency_key)
         # Deduct budget from mandate
-        mandate = _mandates.get(req.mandate_id)
+        mandate = await mandate_store.get(req.mandate_id)
         if mandate:
             mandate["used_amount_paise"] += req.amount_paise
+            await mandate_store.update(req.mandate_id, {"used_amount_paise": mandate["used_amount_paise"]})
 
     # Store for retrieval
     result = {
@@ -261,4 +295,3 @@ async def get_decision(decision_id: UUID) -> AuthorizationResponse:
     if not decision:
         raise HTTPException(status_code=404, detail="Decision not found")
     return AuthorizationResponse(**decision)
-

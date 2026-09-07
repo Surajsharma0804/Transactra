@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   ShieldCheck, Search, ShoppingCart, FileText,
-  Handshake, Package, LogOut, ChevronLeft, ChevronRight, Sun, Moon,
+  Handshake, Package, LogOut, ChevronLeft, ChevronRight, Sun, Moon, Shield,
 } from 'lucide-react';
 import { useAuthStore, useUIStore } from '@/lib/store';
 
@@ -15,6 +15,7 @@ const nav = [
   { label: 'Mandates', href: '/buyer/mandate', icon: FileText },
   { label: 'Negotiate', href: '/buyer/negotiate', icon: Handshake },
   { label: 'Orders', href: '/buyer/orders', icon: Package },
+  { label: 'Verify', href: '/buyer/verify', icon: Shield },
 ];
 
 export default function BuyerLayout({ children }: { children: React.ReactNode }) {

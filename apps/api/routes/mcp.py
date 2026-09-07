@@ -145,28 +145,52 @@ async def invoke_tool(tool_name: str, req: InvokeRequest) -> InvokeResponse:
         )
 
 
+# ── Seed product data for MCP tool handlers ─────────
+# In production this would query the catalog service.
+# For standalone MCP testing, provides realistic demo data.
+_mcp_seed_products = [
+    {"sku": "SKU001", "title": "Wireless Earbuds Pro", "category": "electronics", "price_paise": 299900},
+    {"sku": "SKU002", "title": "Organic Cotton T-Shirt", "category": "clothing", "price_paise": 149900},
+    {"sku": "SKU003", "title": "Himalayan Green Tea", "category": "food", "price_paise": 49900},
+    {"sku": "SKU004", "title": "Smart Watch Ultra", "category": "electronics", "price_paise": 1499900},
+    {"sku": "SKU005", "title": "Bamboo Desk Organizer", "category": "home", "price_paise": 89900},
+]
+
 # ── Tool Handler Implementations ─────────────────────
 
 async def _handle_search(params: dict[str, Any]) -> dict[str, Any]:
-    """Search product catalog. Dispatches to real search adapter."""
-    from adapters.retrieval.search import ProductSearchEngine
-    engine = ProductSearchEngine()
-    query = params.get("query", "")
+    """
+    Search product catalog.
+
+    Uses seed data for MCP tool demo. In production, this would
+    delegate to the CatalogSearchService via async DB session.
+    """
+    query = (params.get("query") or "").lower()
     max_results = params.get("max_results", 10)
-    results = engine.search(query, max_results=max_results)
+
+    if not query:
+        results = _mcp_seed_products[:max_results]
+    else:
+        results = [
+            p for p in _mcp_seed_products
+            if query in p.get("title", "").lower()
+            or query in p.get("category", "").lower()
+            or query in p.get("sku", "").lower()
+        ][:max_results]
+
     return {"results": results, "count": len(results)}
 
 
 async def _handle_compare(params: dict[str, Any]) -> dict[str, Any]:
-    """Compare products by SKU or index."""
+    """Compare products by SKU."""
     product_ids = params.get("product_ids", [])
     if len(product_ids) < 2:
         raise ValueError("Need at least 2 product IDs to compare")
-    # Load products and build comparison table
-    from adapters.retrieval.search import ProductSearchEngine
-    engine = ProductSearchEngine()
-    products = [engine.get_by_sku(pid) for pid in product_ids]
-    products = [p for p in products if p is not None]
+
+    products = [
+        p for p in _mcp_seed_products
+        if p.get("sku") in product_ids
+    ]
     return {"products": products, "count": len(products)}
 
 
@@ -209,10 +233,11 @@ async def _handle_view_proof(params: dict[str, Any]) -> dict[str, Any]:
 
 
 # Map tool names to handler functions — O(1) dispatch
+# Keys must match the ToolDefinition.name values in registry.py
 _tool_handlers: dict[str, Any] = {
-    "search": _handle_search,
-    "compare": _handle_compare,
-    "negotiate": _handle_negotiate,
+    "search_products": _handle_search,
+    "compare_products": _handle_compare,
+    "negotiate_offers": _handle_negotiate,
     "propose_cart": _handle_propose_cart,
     "request_authorization": _handle_request_authorization,
     "view_proof": _handle_view_proof,

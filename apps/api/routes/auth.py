@@ -7,7 +7,7 @@ Endpoints:
 - POST /auth/refresh  — Refresh an expiring token
 - POST /auth/logout   — Logout (clear cookie)
 
-Uses in-memory store for demo. Production would use DB.
+Uses store abstraction for user persistence.
 Passwords hashed with bcrypt via passlib.
 """
 
@@ -29,6 +29,8 @@ from apps.api.security import (
     get_current_user,
     set_csrf_cookie,
 )
+from apps.api.stores.base import UserStore
+from apps.api.stores.provider import get_user_store
 from backend.config import get_settings
 
 logger = logging.getLogger("transactra.auth")
@@ -37,12 +39,6 @@ router = APIRouter(prefix="/auth", tags=["authentication"])
 
 # ── Password hashing — bcrypt, O(1) per hash ────────
 _pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# ── In-memory user store (production → DB) ───────────
-# Map<user_id_str, { id, name, email, password_hash, role, created_at }>
-_users: dict[str, dict] = {}
-# Map<email, user_id> for O(1) email lookup
-_email_index: dict[str, str] = {}
 
 
 # ── Request/Response Models ──────────────────────────
@@ -85,7 +81,11 @@ class RegisterResponse(BaseModel):
 # ── Endpoints ────────────────────────────────────────
 
 @router.post("/register", response_model=RegisterResponse, status_code=201)
-async def register(req: RegisterRequest, response: Response) -> RegisterResponse:
+async def register(
+    req: RegisterRequest,
+    response: Response,
+    user_store: UserStore = Depends(get_user_store),
+) -> RegisterResponse:
     """
     Register a new user account.
 
@@ -96,7 +96,8 @@ async def register(req: RegisterRequest, response: Response) -> RegisterResponse
     Complexity: O(1) for lookup, O(n) for bcrypt where n = cost factor.
     """
     # Check duplicate email — O(1) via index
-    if req.email in _email_index:
+    existing = await user_store.get_by_email(req.email)
+    if existing:
         raise HTTPException(status_code=409, detail="Email already registered")
 
     user_id = str(uuid4())
@@ -111,11 +112,11 @@ async def register(req: RegisterRequest, response: Response) -> RegisterResponse
         "email": req.email,
         "password_hash": password_hash,
         "role": req.role,
+        "status": "active",
         "created_at": now.isoformat() + "Z",
     }
 
-    _users[user_id] = user
-    _email_index[req.email] = user_id
+    await user_store.create(user_id, user)
 
     # Set CSRF cookie for subsequent requests
     csrf = generate_csrf_token()
@@ -133,7 +134,11 @@ async def register(req: RegisterRequest, response: Response) -> RegisterResponse
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(req: LoginRequest, response: Response) -> TokenResponse:
+async def login(
+    req: LoginRequest,
+    response: Response,
+    user_store: UserStore = Depends(get_user_store),
+) -> TokenResponse:
     """
     Authenticate user and return JWT token.
 
@@ -145,13 +150,11 @@ async def login(req: LoginRequest, response: Response) -> TokenResponse:
     Complexity: O(1) lookup + O(n) bcrypt verify.
     """
     # Lookup by email — O(1)
-    user_id = _email_index.get(req.email.strip().lower())
-    if not user_id:
+    user = await user_store.get_by_email(req.email.strip().lower())
+    if not user:
         # Constant-time response to prevent user enumeration
         _pwd_context.hash("dummy")
         raise HTTPException(status_code=401, detail="Invalid email or password")
-
-    user = _users[user_id]
 
     # Verify password — O(n) bcrypt
     if not _pwd_context.verify(req.password, user["password_hash"]):
@@ -197,6 +200,7 @@ async def login(req: LoginRequest, response: Response) -> TokenResponse:
 async def refresh_token(
     response: Response,
     current_user: CurrentUser = Depends(get_current_user),
+    user_store: UserStore = Depends(get_user_store),
 ) -> TokenResponse:
     """
     Refresh an expiring token.
@@ -206,7 +210,7 @@ async def refresh_token(
 
     Complexity: O(1).
     """
-    user = _users.get(current_user.id)
+    user = await user_store.get(current_user.id)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
 

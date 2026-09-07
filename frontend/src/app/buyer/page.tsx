@@ -1,40 +1,78 @@
 'use client';
 
-import { ShoppingCart, FileText, Shield, Package, ArrowRight, TrendingUp } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ShoppingCart, FileText, Shield, Package, ArrowRight, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCartStore } from '@/lib/store';
+import { useCartStore, useAuthStore } from '@/lib/store';
+import { productsApi } from '@/lib/api';
 import { formatPaise } from '@/lib/utils';
 
 export default function BuyerDashboard() {
   const router = useRouter();
   const { items, totalPaise } = useCartStore();
+  const { user } = useAuthStore();
   const cartCount = items.size;
+
+  const [productCount, setProductCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await productsApi.getAll();
+        setProductCount(data.total ?? data.products?.length ?? 0);
+      } catch {
+        setProductCount(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   return (
     <div className="max-w-5xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Dashboard</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          Your agentic commerce overview
+          {user?.name ? `Welcome back, ${user.name}` : 'Your agentic commerce overview'}
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[
-          { label: 'Products Available', value: '2,400+', icon: Package, change: '+12%' },
-          { label: 'Active Mandates', value: '3', icon: FileText, change: 'Valid' },
-          { label: 'Auth Gate Pass Rate', value: '98.4%', icon: Shield, change: '16/16' },
-        ].map((s) => (
-          <div key={s.label} className="card p-5">
-            <div className="flex items-center justify-between mb-3">
-              <s.icon className="w-4.5 h-4.5" style={{ color: 'var(--text-muted)' }} />
-              <span className="badge badge-success">{s.change}</span>
-            </div>
-            <p className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>{s.value}</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{s.label}</p>
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <Package className="w-4.5 h-4.5" style={{ color: 'var(--text-muted)' }} />
+            <span className="badge badge-success">Live</span>
           </div>
-        ))}
+          <p className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (productCount !== null ? productCount.toLocaleString() : '—')}
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Products Available</p>
+        </div>
+
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <ShoppingCart className="w-4.5 h-4.5" style={{ color: 'var(--text-muted)' }} />
+            <span className="badge badge-success">{cartCount > 0 ? 'Active' : 'Empty'}</span>
+          </div>
+          <p className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>
+            {cartCount > 0 ? formatPaise(totalPaise) : '₹0'}
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+            Cart · {cartCount} item{cartCount !== 1 ? 's' : ''}
+          </p>
+        </div>
+
+        <div className="card p-5">
+          <div className="flex items-center justify-between mb-3">
+            <Shield className="w-4.5 h-4.5" style={{ color: 'var(--text-muted)' }} />
+            <span className="badge badge-success">16/16</span>
+          </div>
+          <p className="text-2xl font-semibold" style={{ color: 'var(--text)' }}>Verified</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Authorization Gate</p>
+        </div>
       </div>
 
       {/* Quick Actions */}

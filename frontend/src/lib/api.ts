@@ -212,3 +212,34 @@ export const mcpApi = {
       body: JSON.stringify(request),
     }),
 };
+
+// ── Trust API ───────────────────────────────────────
+
+export const trustApi = {
+  get: (merchantId: string) =>
+    apiFetch<any>(`/trust/${merchantId}`),
+
+  getAll: () =>
+    apiFetch<any[]>('/trust'),
+
+  recordEvent: (merchantId: string, event: { event_type: string; fulfillment_hours?: number; was_on_time?: boolean }) =>
+    apiFetch<any>(`/trust/${merchantId}/event`, {
+      method: 'POST',
+      body: JSON.stringify(event),
+    }),
+};
+
+// ── Evidence API ────────────────────────────────────
+
+export const evidenceApi = {
+  getChain: (orderId: string) =>
+    apiFetch<any>(`/evidence/${orderId}`),
+
+  verify: (orderId: string) =>
+    apiFetch<any>(`/evidence/${orderId}/verify`, {
+      method: 'POST',
+    }),
+
+  getDecision: (decisionId: string) =>
+    apiFetch<any>(`/authorize/${decisionId}`),
+};

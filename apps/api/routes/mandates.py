@@ -20,6 +20,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
 from apps.api.security import CurrentUser, get_current_user
+from apps.api.stores.base import MandateStore, ConsentStore
+from apps.api.stores.provider import get_mandate_store, get_consent_store
 
 router = APIRouter(prefix="/mandates", tags=["mandates"])
 
@@ -90,18 +92,13 @@ class ConsentResponse(BaseModel):
     created_at: datetime
 
 
-# ── In-memory store (for stateless demo; DB in production) ───
-
-_mandates: dict[UUID, dict[str, Any]] = {}
-_consents: dict[UUID, dict[str, Any]] = {}
-
-
 # ── Endpoints ────────────────────────────────────────
 
 @router.post("", response_model=MandateResponse, status_code=201)
 async def create_mandate(
     req: CreateMandateRequest,
     current_user: CurrentUser = Depends(get_current_user),
+    mandate_store: MandateStore = Depends(get_mandate_store),
 ) -> MandateResponse:
     """
     Create a spending mandate that bounds what an AI agent can spend.
@@ -136,7 +133,7 @@ async def create_mandate(
         "valid_until": req.valid_until,
         "created_at": now,
     }
-    _mandates[mandate_id] = mandate
+    await mandate_store.create(mandate_id, mandate)
 
     return MandateResponse(
         **mandate,
@@ -148,9 +145,10 @@ async def create_mandate(
 async def get_mandate(
     mandate_id: UUID,
     current_user: CurrentUser = Depends(get_current_user),
+    mandate_store: MandateStore = Depends(get_mandate_store),
 ) -> MandateResponse:
     """Get mandate details. O(1) lookup. Requires authentication."""
-    mandate = _mandates.get(mandate_id)
+    mandate = await mandate_store.get(mandate_id)
     if not mandate:
         raise HTTPException(status_code=404, detail="Mandate not found")
     # Ownership check
@@ -167,6 +165,8 @@ async def create_consent(
     mandate_id: UUID,
     req: CreateConsentRequest,
     current_user: CurrentUser = Depends(get_current_user),
+    mandate_store: MandateStore = Depends(get_mandate_store),
+    consent_store: ConsentStore = Depends(get_consent_store),
 ) -> ConsentResponse:
     """
     Request user consent for a specific cart under a mandate.
@@ -176,7 +176,7 @@ async def create_consent(
 
     Complexity: O(1).
     """
-    mandate = _mandates.get(mandate_id)
+    mandate = await mandate_store.get(mandate_id)
     if not mandate:
         raise HTTPException(status_code=404, detail="Mandate not found")
     if mandate["status"] != "active":
@@ -198,15 +198,18 @@ async def create_consent(
         "expires_at": None,
         "created_at": now,
     }
-    _consents[consent_id] = consent
+    await consent_store.create(consent_id, consent)
 
     return ConsentResponse(**consent)
 
 
 @router.get("/consent/{consent_id}", response_model=ConsentResponse)
-async def get_consent(consent_id: UUID) -> ConsentResponse:
+async def get_consent(
+    consent_id: UUID,
+    consent_store: ConsentStore = Depends(get_consent_store),
+) -> ConsentResponse:
     """Get consent status. O(1) lookup."""
-    consent = _consents.get(consent_id)
+    consent = await consent_store.get(consent_id)
     if not consent:
         raise HTTPException(status_code=404, detail="Consent not found")
     return ConsentResponse(**consent)

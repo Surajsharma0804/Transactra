@@ -61,18 +61,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── Serve Frontend ───────────────────────────────────
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-import os
-
-_project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-@app.get("/", include_in_schema=False)
-async def serve_index():
-    """Serve the production frontend."""
-    return FileResponse(os.path.join(_project_root, "index.html"))
-
 # ── Register Routers ─────────────────────────────────
 from apps.api.routes.catalog import router as catalog_router
 from apps.api.routes.mandates import router as mandates_router
@@ -80,6 +68,8 @@ from apps.api.routes.authorization import router as authorization_router
 from apps.api.routes.orders import router as orders_router
 from apps.api.routes.mcp import router as mcp_router
 from apps.api.routes.auth import router as auth_router
+from apps.api.routes.trust import router as trust_router
+from apps.api.routes.evidence import router as evidence_router
 
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(catalog_router, prefix="/api/v1")
@@ -87,6 +77,8 @@ app.include_router(mandates_router, prefix="/api/v1")
 app.include_router(authorization_router, prefix="/api/v1")
 app.include_router(orders_router, prefix="/api/v1")
 app.include_router(mcp_router, prefix="/api/v1")
+app.include_router(trust_router, prefix="/api/v1")
+app.include_router(evidence_router, prefix="/api/v1")
 
 # ── CORS ─────────────────────────────────────────────
 
