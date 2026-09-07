@@ -52,3 +52,14 @@ desktop.ini
 *.pem
 *.key
 *.crt
+
+# AI agent config — not project code
+AGENTS.md
+CLAUDE.md
+
+# Next.js default boilerplate SVGs
+frontend/public/file.svg
+frontend/public/globe.svg
+frontend/public/next.svg
+frontend/public/vercel.svg
+frontend/public/window.svg
